@@ -1,15 +1,29 @@
-#include <cstdint>
-#include <cstdio>
-
+/**
+ * 6502 CPU Implementation.
+ */
 #include "cpu.h"
 
-Cpu::Cpu(IReadWrite &bus, vector<CpuInstruction> &opcodes) : _bus(bus), _opcodes(opcodes)
+#include <cstdint>
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
+/**
+ * Constructor.
+ *
+ * @param bus The device to perform reads/writes over.
+ * @param opcodes A mapping between opcodes and the instructions/address modes
+ *                that make up that opcode.
+ */
+Cpu::Cpu(IReadWrite &bus, vector<CpuInstruction> &opcodes)
+    : _bus(bus), _opcodes(opcodes)
 {
     Reset();
 }
 
 /**
- * @brief Reset the state of the processor to when it was just powered on
+ * Reset the state of the processor to when it was just powered on.
  */
 void Cpu::Reset()
 {
@@ -25,11 +39,11 @@ void Cpu::Reset()
 }
 
 /**
- * @brief Execute a set number of instructions based on their cycle counts
+ * Execute a set number of instructions based on their cycle counts.
  *
- * @param num_cycles The number of cycles to execute before stopping execution
+ * @param num_cycles The number of cycles to execute before stopping execution.
  *
- * @return The number of cycles that actually ran
+ * @return The number of cycles that actually ran.
  */
 uint32_t Cpu::Execute(uint32_t num_cycles)
 {
@@ -42,7 +56,7 @@ uint32_t Cpu::Execute(uint32_t num_cycles)
 }
 
 /**
- * @brief Execute a single instruction
+ * Execute a single instruction.
  */
 void Cpu::SingleStep()
 {
@@ -62,11 +76,12 @@ void Cpu::SingleStep()
 }
 
 /**
- * @brief Helper function for performing "16-bit" bus reads
+ * Helper function for performing "16-bit" bus reads. In reality, this will
+ * perform two 8-bit reads since the 6502 only has an 8-bit data bus.
  *
- * @param addr 16-bit address to start reading from
+ * @param addr 16-bit address to start reading from.
  *
- * @return 16-bit value starting at addr
+ * @return 16-bit value starting at addr.
  */
 uint16_t Cpu::bus_read16(uint16_t addr) const
 {
@@ -74,9 +89,12 @@ uint16_t Cpu::bus_read16(uint16_t addr) const
 }
 
 /**
- * @brief Helper function for saving an instruction result
+ * Helper function for saving an instruction's result. If the opcode uses the
+ * 'Accumulator' addressing mode, the result is stored in the accumulator
+ * register. Otherwise, the result is written to the bus at the calculated
+ * effective address.
  *
- * @param result The value to save
+ * @param result The value to save.
  */
 void Cpu::save_result(uint16_t result)
 {
@@ -87,10 +105,13 @@ void Cpu::save_result(uint16_t result)
 }
 
 /**
- * @brief Helper function for handling branches on flag values
+ * Helper function for handling branches on flag values. Correctly handles
+ * incrementing the _total_cycles variable based on whether the branch passed
+ * a page boundary.
  *
- * @param flag The flag to branch on
- * @param value If the flag is set to this value, it executes the branch
+ *
+ * @param flag The flag to branch on.
+ * @param value If the flag is set to this value, it executes the branch.
  */
 void Cpu::do_branch(CpuFlag flag, uint8_t value)
 {
@@ -111,7 +132,9 @@ void Cpu::do_branch(CpuFlag flag, uint8_t value)
     }
 }
 
-/******* STACK MANIPULATION *******/
+/*******************************************************************************
+                            STACK MANIPULATION
+ ******************************************************************************/
 
 void Cpu::push8(uint8_t value)
 {
@@ -141,7 +164,9 @@ uint16_t Cpu::pull16()
     return temp;
 }
 
-/******* FLAG MANIPULATION *******/
+/*******************************************************************************
+                            FLAG MANIPULATION
+ ******************************************************************************/
 
 uint8_t Cpu::get_flag(CpuFlag flag) const
 {
@@ -188,10 +213,12 @@ void Cpu::update_negative(uint16_t result)
         set_flag(FLAG_NEGATIVE, 0);
 }
 
-/******* ADDRESSING MODE CALCULATIONS *******/
+/*******************************************************************************
+                            ADDRESSING MODE CALCULATIONS
+ ******************************************************************************/
 
 /**
- * @brief Accumulator Addressing Mode
+ * Accumulator Addressing Mode.
  */
 bool Cpu::addr_acc()
 {
@@ -202,7 +229,7 @@ bool Cpu::addr_acc()
 }
 
 /**
- * @brief Absolute Addressing Mode
+ * Absolute Addressing Mode.
  */
 bool Cpu::addr_abs()
 {
@@ -214,9 +241,9 @@ bool Cpu::addr_abs()
 }
 
 /**
- * @brief Absolute (X-indexed) Addressing Mode
+ * Absolute (X-indexed) Addressing Mode.
  *
- * @return True if effective address passed over a page boundary
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_abs_x()
 {
@@ -234,9 +261,9 @@ bool Cpu::addr_abs_x()
 }
 
 /**
- * @brief Absolute (Y-indexed) Addressing Mode
+ * Absolute (Y-indexed) Addressing Mode.
  *
- * @return True if effective address passed over a page boundary
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_abs_y()
 {
@@ -254,7 +281,9 @@ bool Cpu::addr_abs_y()
 }
 
 /**
- * @brief Immediate Addressing Mode
+ * Immediate Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_imm()
 {
@@ -265,7 +294,9 @@ bool Cpu::addr_imm()
 }
 
 /**
- * @brief Implied Addressing Mode
+ * Implied Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_imp()
 {
@@ -276,17 +307,21 @@ bool Cpu::addr_imp()
 }
 
 /**
- * @brief Indirect Addressing Mode
+ * Indirect Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_ind()
 {
     uint16_t ea_lower = 0, ea_upper = 0;
 
-    /*
-     * Have to do all this fancy stuff to replicate page-boundary wraparound bug.
+    /**
+     * Have to do all this fancy stuff to replicate the page-boundary wraparound
+     * bug.
      *
-     * Basically, if you do an indirect jump with a low byte of $FF, then the
-     * CPU will not increment the high byte. It will then read from the wrong page.
+     * Basically, if you do an indirect jump with a low byte of $FF then the
+     * CPU will not increment the high byte (like it should). It will then read
+     * from the wrong page.
      *
      * Example:
      * If you do JUMP ($0FFF), then the CPU will get it's effective address
@@ -304,12 +339,15 @@ bool Cpu::addr_ind()
 }
 
 /**
- * @brief Indirect (X-indexed) Addressing Mode
+ * Indirect (X-indexed) Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_x_ind()
 {
     _effective_addr = (_bus.Read(_context.pc++) + _context.x) & 0xFF;
-    _effective_addr = _bus.Read(_effective_addr) | (_bus.Read((_effective_addr + 1) & 0xFF) << 8);
+    _effective_addr = _bus.Read(_effective_addr) |
+                      (_bus.Read((_effective_addr + 1) & 0xFF) << 8);
 
     _effective_value = _bus.Read(_effective_addr);
 
@@ -317,14 +355,17 @@ bool Cpu::addr_x_ind()
 }
 
 /**
- * @brief Indirect (Y-indexed) Addressing Mode
+ * Indirect (Y-indexed) Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_ind_y()
 {
     uint16_t start_page = 0;
 
     _effective_addr = _bus.Read(_context.pc++);
-    _effective_addr = _bus.Read(_effective_addr) | (_bus.Read((_effective_addr + 1) & 0xFF) << 8);
+    _effective_addr = _bus.Read(_effective_addr) |
+                      (_bus.Read((_effective_addr + 1) & 0xFF) << 8);
 
     start_page = _effective_addr & 0xFF00;
 
@@ -336,7 +377,9 @@ bool Cpu::addr_ind_y()
 }
 
 /**
- * @brief Relative Addressing Mode
+ * Relative Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_rel()
 {
@@ -348,7 +391,9 @@ bool Cpu::addr_rel()
 }
 
 /**
- * @brief Zero-page Addressing Mode
+ * Zero-page Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_zpg()
 {
@@ -359,7 +404,9 @@ bool Cpu::addr_zpg()
 }
 
 /**
- * @brief Zero-page (X-indexed) Addressing Mode
+ * Zero-page (X-indexed) Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_zpg_x()
 {
@@ -370,7 +417,9 @@ bool Cpu::addr_zpg_x()
 }
 
 /**
- * @brief Zero-page (Y-indexed) Addressing Mode
+ * Zero-page (Y-indexed) Addressing Mode.
+ *
+ * @return True if effective address passed over a page boundary.
  */
 bool Cpu::addr_zpg_y()
 {
@@ -380,10 +429,12 @@ bool Cpu::addr_zpg_y()
     return false;
 }
 
-/******* INSTRUCTIONS *******/
+/*******************************************************************************
+                                 INSTRUCTIONS
+ ******************************************************************************/
 
 /**
- * @brief Add with Carry
+ * Add with Carry.
  */
 void Cpu::instr_adc()
 {
@@ -394,7 +445,9 @@ void Cpu::instr_adc()
     update_overflow(result);
     update_negative(result);
 
-    // Handle decimal mode addition
+    /**
+     * Handle decimal mode addition.
+     */
     if(get_flag(FLAG_DECIMAL)) {
         set_flag(FLAG_CARRY, 0);
 
@@ -406,7 +459,9 @@ void Cpu::instr_adc()
             set_flag(FLAG_CARRY, 1);
         }
 
-        // Decimal mode adds a cycle
+        /**
+         * Decimal mode adds a cycle.
+         */
         _total_cycles++;
     }
 
@@ -414,7 +469,7 @@ void Cpu::instr_adc()
 }
 
 /**
- * @brief AND logical operation
+ * AND logical operation.
  */
 void Cpu::instr_and()
 {
@@ -427,7 +482,7 @@ void Cpu::instr_and()
 }
 
 /**
- * @brief Arithmatic Shift Left
+ * Arithmatic Shift Left.
  */
 void Cpu::instr_asl()
 {
@@ -441,7 +496,7 @@ void Cpu::instr_asl()
 }
 
 /**
- * @brief Branch if Carry Clear
+ * Branch if Carry Clear.
  */
 void Cpu::instr_bcc()
 {
@@ -449,7 +504,7 @@ void Cpu::instr_bcc()
 }
 
 /**
- * @brief Branch if Carry Set
+ * Branch if Carry Set.
  */
 void Cpu::instr_bcs()
 {
@@ -457,7 +512,7 @@ void Cpu::instr_bcs()
 }
 
 /**
- * @brief Branch if Equal to Zero
+ * Branch if Equal to Zero.
  */
 void Cpu::instr_beq()
 {
@@ -465,7 +520,7 @@ void Cpu::instr_beq()
 }
 
 /**
- * @brief Memory Bit Test
+ * Memory Bit Test.
  */
 void Cpu::instr_bit()
 {
@@ -477,7 +532,7 @@ void Cpu::instr_bit()
 }
 
 /**
- * @brief Branch on Minus (negative)
+ * Branch on Minus (negative).
  */
 void Cpu::instr_bmi()
 {
@@ -485,7 +540,7 @@ void Cpu::instr_bmi()
 }
 
 /**
- * @brief Branch on Not Equal to Zero
+ * Branch on Not Equal to Zero.
  */
 void Cpu::instr_bne()
 {
@@ -493,7 +548,7 @@ void Cpu::instr_bne()
 }
 
 /**
- * @brief Branch on Plus
+ * Branch on Plus (positive).
  */
 void Cpu::instr_bpl()
 {
@@ -501,7 +556,7 @@ void Cpu::instr_bpl()
 }
 
 /**
- * @brief Break (software interrupt)
+ * Break (software interrupt).
  */
 void Cpu::instr_brk()
 {
@@ -516,7 +571,7 @@ void Cpu::instr_brk()
 }
 
 /**
- * @brief Branch on Overflow Clear
+ * Branch on Overflow Clear.
  */
 void Cpu::instr_bvc()
 {
@@ -524,7 +579,7 @@ void Cpu::instr_bvc()
 }
 
 /**
- * @brief Branch on Overflow Set
+ * Branch on Overflow Set.
  */
 void Cpu::instr_bvs()
 {
@@ -532,7 +587,7 @@ void Cpu::instr_bvs()
 }
 
 /**
- * @brief Clear Carry
+ * Clear Carry.
  */
 void Cpu::instr_clc()
 {
@@ -540,7 +595,7 @@ void Cpu::instr_clc()
 }
 
 /**
- * @brief Clear Decimal
+ * Clear Decimal.
  */
 void Cpu::instr_cld()
 {
@@ -548,7 +603,7 @@ void Cpu::instr_cld()
 }
 
 /**
- * @brief Clear Interrupt
+ * Clear Interrupt.
  */
 void Cpu::instr_cli()
 {
@@ -556,7 +611,7 @@ void Cpu::instr_cli()
 }
 
 /**
- * @brief Clear Overflow
+ * Clear Overflow.
  */
 void Cpu::instr_clv()
 {
@@ -564,7 +619,7 @@ void Cpu::instr_clv()
 }
 
 /**
- * @brief Compare with accumulator
+ * Compare with accumulator.
  */
 void Cpu::instr_cmp()
 {
@@ -582,7 +637,7 @@ void Cpu::instr_cmp()
 }
 
 /**
- * @brief Compare with X-index
+ * Compare with X-index.
  */
 void Cpu::instr_cpx()
 {
@@ -600,7 +655,7 @@ void Cpu::instr_cpx()
 }
 
 /**
- * @brief Compare with Y-index
+ * Compare with Y-index.
  */
 void Cpu::instr_cpy()
 {
@@ -618,7 +673,7 @@ void Cpu::instr_cpy()
 }
 
 /**
- * @brief Decrement Memory
+ * Decrement Memory.
  */
 void Cpu::instr_dec()
 {
@@ -631,7 +686,7 @@ void Cpu::instr_dec()
 }
 
 /**
- * @brief Decrement Index X by One
+ * Decrement Index X by One.
  */
 void Cpu::instr_dex()
 {
@@ -642,7 +697,7 @@ void Cpu::instr_dex()
 }
 
 /**
- * @brief Decrement Index Y by One
+ * Decrement Index Y by One.
  */
 void Cpu::instr_dey()
 {
@@ -653,7 +708,7 @@ void Cpu::instr_dey()
 }
 
 /**
- * @brief Exclusive-OR Memory with Accumulator
+ * Exclusive-OR Memory with Accumulator.
  */
 void Cpu::instr_eor()
 {
@@ -666,7 +721,7 @@ void Cpu::instr_eor()
 }
 
 /**
- * @brief Increment Memory by One
+ * Increment Memory by One.
  */
 void Cpu::instr_inc()
 {
@@ -679,7 +734,7 @@ void Cpu::instr_inc()
 }
 
 /**
- * @brief Increment Index X by One
+ * Increment Index X by One.
  */
 void Cpu::instr_inx()
 {
@@ -690,7 +745,7 @@ void Cpu::instr_inx()
 }
 
 /**
- * @brief Increment Index Y by One
+ * Increment Index Y by One.
  */
 void Cpu::instr_iny()
 {
@@ -701,7 +756,7 @@ void Cpu::instr_iny()
 }
 
 /**
- * @brief Jump to New Location
+ * Jump to New Location.
  */
 void Cpu::instr_jmp()
 {
@@ -709,7 +764,7 @@ void Cpu::instr_jmp()
 }
 
 /**
- * @brief Jump to New Location Saving Return Address
+ * Jump to New Location Saving Return Address.
  */
 void Cpu::instr_jsr()
 {
@@ -718,7 +773,7 @@ void Cpu::instr_jsr()
 }
 
 /**
- * @brief Load Accumulator with Memory
+ * Load Accumulator with Memory.
  */
 void Cpu::instr_lda()
 {
@@ -729,7 +784,7 @@ void Cpu::instr_lda()
 }
 
 /**
- * @brief Load Index X with Memory
+ * Load Index X with Memory.
  */
 void Cpu::instr_ldx()
 {
@@ -740,7 +795,7 @@ void Cpu::instr_ldx()
 }
 
 /**
- * @brief Load Index Y with Memory
+ * Load Index Y with Memory.
  */
 void Cpu::instr_ldy()
 {
@@ -751,7 +806,7 @@ void Cpu::instr_ldy()
 }
 
 /**
- * @brief Shift One Bit Right (Memory or Accumulator)
+ * Shift One Bit Right (Memory or Accumulator).
  */
 void Cpu::instr_lsr()
 {
@@ -765,15 +820,17 @@ void Cpu::instr_lsr()
 }
 
 /**
- * @brief No Operation
+ * No Operation.
  */
 void Cpu::instr_nop()
 {
-    // This is a NOP, what do you think it does?
+    /**
+     * This is a NOP, what do you think it does?
+     */
 }
 
 /**
- * @brief OR Memory with Accumulator
+ * OR Memory with Accumulator.
  */
 void Cpu::instr_ora()
 {
@@ -786,7 +843,7 @@ void Cpu::instr_ora()
 }
 
 /**
- * @brief Push Accumulator on Stack
+ * Push Accumulator on Stack.
  */
 void Cpu::instr_pha()
 {
@@ -794,7 +851,7 @@ void Cpu::instr_pha()
 }
 
 /**
- * @brief Push Processor Status on Stack
+ * Push Processor Status on Stack.
  */
 void Cpu::instr_php()
 {
@@ -802,7 +859,7 @@ void Cpu::instr_php()
 }
 
 /**
- * @brief Pull Accumulator from Stack
+ * Pull Accumulator from Stack.
  */
 void Cpu::instr_pla()
 {
@@ -813,7 +870,7 @@ void Cpu::instr_pla()
 }
 
 /**
- * @brief Pull Processor Status from Stack
+ * Pull Processor Status from Stack.
  */
 void Cpu::instr_plp()
 {
@@ -821,7 +878,7 @@ void Cpu::instr_plp()
 }
 
 /**
- * @brief Rotate One Bit Left (Memory or Accumulator)
+ * Rotate One Bit Left (Memory or Accumulator).
  */
 void Cpu::instr_rol()
 {
@@ -835,7 +892,7 @@ void Cpu::instr_rol()
 }
 
 /**
- * @brief Rotate One Bit Right (Memory or Accumulator)
+ * Rotate One Bit Right (Memory or Accumulator).
  */
 void Cpu::instr_ror()
 {
@@ -849,7 +906,7 @@ void Cpu::instr_ror()
 }
 
 /**
- * @brief Return from Interrupt
+ * Return from Interrupt.
  */
 void Cpu::instr_rti()
 {
@@ -858,7 +915,7 @@ void Cpu::instr_rti()
 }
 
 /**
- * @brief Return from Subroutine
+ * Return from Subroutine.
  */
 void Cpu::instr_rts()
 {
@@ -866,18 +923,22 @@ void Cpu::instr_rts()
 }
 
 /**
- * @brief Subtract Memory from Accumulator with Borrow
+ * Subtract Memory from Accumulator with Borrow.
  */
 void Cpu::instr_sbc()
 {
-    uint16_t result = _context.acc + (_effective_value ^ 0xFF) + get_flag(FLAG_CARRY);
+    uint16_t result = _context.acc +
+                     (_effective_value ^ 0xFF) +
+                     get_flag(FLAG_CARRY);
 
     update_carry(result);
     update_zero(result);
     update_overflow(result);
     update_negative(result);
 
-    // Handle decimal mode addition
+    /**
+     * Handle decimal mode subtraction.
+     */
     if(get_flag(FLAG_DECIMAL)) {
         set_flag(FLAG_CARRY, 0);
 
@@ -890,7 +951,9 @@ void Cpu::instr_sbc()
             set_flag(FLAG_CARRY, 1);
         }
 
-        // Decimal mode adds a cycle
+        /**
+         * Decimal mode adds a cycle.
+         */
         _total_cycles++;
     }
 
@@ -898,7 +961,7 @@ void Cpu::instr_sbc()
 }
 
 /**
- * @brief Set Carry Flag
+ * Set Carry Flag.
  */
 void Cpu::instr_sec()
 {
@@ -906,7 +969,7 @@ void Cpu::instr_sec()
 }
 
 /**
- * @brief Set Decimal Flag
+ * Set Decimal Flag.
  */
 void Cpu::instr_sed()
 {
@@ -914,7 +977,7 @@ void Cpu::instr_sed()
 }
 
 /**
- * @brief Set Interrupt Disable Status
+ * Set Interrupt Disable Status.
  */
 void Cpu::instr_sei()
 {
@@ -922,7 +985,7 @@ void Cpu::instr_sei()
 }
 
 /**
- * @brief Store Accumulator in Memory
+ * Store Accumulator in Memory.
  */
 void Cpu::instr_sta()
 {
@@ -930,7 +993,7 @@ void Cpu::instr_sta()
 }
 
 /**
- * @brief Store Index X in Memory
+ * Store Index X in Memory.
  */
 void Cpu::instr_stx()
 {
@@ -938,7 +1001,7 @@ void Cpu::instr_stx()
 }
 
 /**
- * @brief Store Index Y in Memory
+ * Store Index Y in Memory.
  */
 void Cpu::instr_sty()
 {
@@ -946,7 +1009,7 @@ void Cpu::instr_sty()
 }
 
 /**
- * @brief Transfer Accumulator to Index X
+ * Transfer Accumulator to Index X.
  */
 void Cpu::instr_tax()
 {
@@ -957,7 +1020,7 @@ void Cpu::instr_tax()
 }
 
 /**
- * @brief Transfer Accumulator to Index Y
+ * Transfer Accumulator to Index Y.
  */
 void Cpu::instr_tay()
 {
@@ -968,7 +1031,7 @@ void Cpu::instr_tay()
 }
 
 /**
- * @brief Transfer Stack Pointer to Index X
+ * Transfer Stack Pointer to Index X.
  */
 void Cpu::instr_tsx()
 {
@@ -979,7 +1042,7 @@ void Cpu::instr_tsx()
 }
 
 /**
- * @brief Transfer Index X to Accumulator
+ * Transfer Index X to Accumulator.
  */
 void Cpu::instr_txa()
 {
@@ -990,7 +1053,7 @@ void Cpu::instr_txa()
 }
 
 /**
- * @brief Transfer Index X to Stack Pointer
+ * Transfer Index X to Stack Pointer.
  */
 void Cpu::instr_txs()
 {
@@ -998,7 +1061,7 @@ void Cpu::instr_txs()
 }
 
 /**
- * @brief Transfer Index Y to Accumulator
+ * Transfer Index Y to Accumulator.
  */
 void Cpu::instr_tya()
 {
@@ -1009,9 +1072,9 @@ void Cpu::instr_tya()
 }
 
 /**
- * @brief Undefined Instruction
+ * Undefined Instruction.
  */
 void Cpu::instr_und()
 {
-    printf("Undocumented Opcode: %x\n", _cur_opcode);
+    cout << "Undocumented Opcode used: 0x" << std::hex << _cur_opcode << endl;
 }

@@ -1,8 +1,13 @@
-#include <vector>
-
+/**
+ * Contains the CPU instruction table for the standard 6502 CPU.
+ */
 #include "cpu.h"
 
-// CPU Instruction Table (256 total instructions)
+#include <vector>
+
+/**
+ * CPU Instruction Table (256 total instructions).
+ */
 vector<CpuInstruction> instrs_6502 {
 /* 00 */ { "BRK", &Cpu::addr_imp, &Cpu::instr_brk, false, 7, 1 },
 /* 01 */ { "ORA", &Cpu::addr_x_ind, &Cpu::instr_ora, false, 6, 2 },

@@ -1,15 +1,23 @@
+/**
+ * Represents a memory module within the Apple II computer.
+ */
+#include "memory.h"
+
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <string>
-
-#include "memory.h"
 
 using std::cout;
 using std::endl;
 using std::ifstream;
 using std::string;
 
+/**
+ * Constructor.
+ *
+ * @param size Size of the memory to allocate.
+ */
 Memory::Memory(uint32_t size) : _memory(nullptr), _size(size)
 {
     if (size != 0)
@@ -17,12 +25,12 @@ Memory::Memory(uint32_t size) : _memory(nullptr), _size(size)
 }
 
 /**
- * @brief Load a binary from a file and place it into memory
+ * Load a binary from a file and place it into memory.
  *
- * @param path Path to the executable to load up
- * @param start_addr Address where to put the executable
+ * @param path Path to the executable to load up.
+ * @param start_addr Address where to put the executable.
  *
- * @return True on successful load, false otherwise
+ * @return True on successful load, false otherwise.
  */
 bool Memory::LoadExecutable(const string &path, uint16_t start_addr)
 {
@@ -52,8 +60,10 @@ bool Memory::LoadExecutable(const string &path, uint16_t start_addr)
 }
 
 /**
- * @brief Read a single 8-bit quantity out of memory
+ * Read a single 8-bit quantity out of memory.
+ *
  * @param addr Address to read from
+ *
  * @return The data at that address
  */
 uint8_t Memory::Read(uint16_t addr) const
@@ -72,9 +82,10 @@ uint8_t Memory::Read(uint16_t addr) const
 }
 
 /**
- * @brief Write a single 8-bit quantity to memory
- * @param addr
- * @param data
+ * Write a single 8-bit quantity to memory.
+ *
+ * @param addr The address being written.
+ * @param data The data to write to this memory.
  */
 void Memory::Write(uint16_t addr, uint8_t data)
 {
@@ -84,6 +95,9 @@ void Memory::Write(uint16_t addr, uint8_t data)
         _memory[addr] = data;
 }
 
+/**
+ * Destructor.
+ */
 Memory::~Memory()
 {
     if(_memory != nullptr)
