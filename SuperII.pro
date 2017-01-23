@@ -1,7 +1,10 @@
 QT += core
 QT -= gui
 
-CONFIG += c++11
+CONFIG += c++11 warn_on
+OBJECTS_DIR = build
+MOC_DIR = build
+DESTDIR = build
 
 TARGET = SuperII
 CONFIG += console
@@ -14,10 +17,9 @@ SOURCES += main.cpp \
     cpu.cpp \
     instrs_6502.cpp
 
-DISTFILES += \
+OTHER_FILES += \
     TODO.txt \
-    asm/a.o65 \
-    asm/test.s
+    asm/*
 
 HEADERS += \
     memory.h \
