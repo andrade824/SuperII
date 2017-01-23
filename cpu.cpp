@@ -16,7 +16,7 @@ using std::endl;
  * @param opcodes A mapping between opcodes and the instructions/address modes
  *                that make up that opcode.
  */
-Cpu::Cpu(IReadWrite &bus, vector<CpuInstruction> &opcodes)
+Cpu::Cpu(IMemoryMapped &bus, vector<CpuInstruction> &opcodes)
     : _bus(bus), _opcodes(opcodes)
 {
     Reset();

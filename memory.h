@@ -8,7 +8,7 @@
 
 using std::string;
 
-class Memory : public IReadWrite
+class Memory : public IMemoryMapped
 {
 public:
     explicit Memory(uint32_t size);

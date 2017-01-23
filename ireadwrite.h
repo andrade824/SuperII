@@ -7,7 +7,7 @@
  * Standard interface for modules that provide a way to read/write memory mapped
  * values.
  */
-class IReadWrite
+class IMemoryMapped
 {
 public:
     /**
@@ -30,7 +30,7 @@ public:
     /**
      * Required for polymorphism.
      */
-    virtual ~IReadWrite() {}
+    virtual ~IMemoryMapped() {}
 };
 
 #endif // IREADWRITE_H

@@ -107,7 +107,7 @@ enum CpuFlag {
  */
 class Cpu {
 public:
-    explicit Cpu(IReadWrite &bus, vector<CpuInstruction> &opcodes);
+    explicit Cpu(IMemoryMapped &bus, vector<CpuInstruction> &opcodes);
 
     Cpu(const Cpu &copy) = delete;
     Cpu & operator=(const Cpu &rhs) = delete;
@@ -252,7 +252,7 @@ private:
     /**
      * System bus to perform read/write cycles on.
      */
-    IReadWrite &_bus;
+    IMemoryMapped &_bus;
 
     /**
      * CPU Instruction Table (256 total instructions).
