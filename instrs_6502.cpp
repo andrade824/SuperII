@@ -1,7 +1,7 @@
 /**
- * Contains the CPU instruction table for the standard 6502 CPU.
+ * Contains the CPU instruction table for the standard 6502 CPU (Apple II/II+).
  */
-#include "cpu.h"
+#include "Cpu.h"
 
 #include <vector>
 

@@ -1,24 +1,12 @@
-IReadWrite {
-    uint8_t read8(uint16_t addr);
-    void write8(uint16_t addr, uint8_t data);
 
-private:
-    bool m_writeProtected;      // Should I even do this?
-}
-
-AddressBus (inherits from IReadWrite):
+SystemBus (inherits from IMemoryMapped):
 struct MemoryRegion {
     uint16_t start;
     uint16_t end;
-    IReadWrite &device;
+    IMemoryMapped &device;
 }
 
 std::vector<MemoryRegion> memRegions {
     {0x0000, 0x0FFF, MEMORY},
     {0xC000, 0xCFFF, IO}
 }
-
-Binary search the above array when needed
-
-
-Copy constructor and assignment op overload!!!

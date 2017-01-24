@@ -1,9 +1,9 @@
 #ifndef INSTRS_6502_H
 #define INSTRS_6502_H
 
-#include <vector>
+#include "Cpu.h"
 
-#include "cpu.h"
+#include <vector>
 
 // Vector of instructions to pass to a CPU object
 extern vector<CpuInstruction> instrs_6502;

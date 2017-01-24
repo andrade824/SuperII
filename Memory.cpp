@@ -1,7 +1,7 @@
 /**
  * Represents a memory module within the Apple II computer.
  */
-#include "memory.h"
+#include "Memory.h"
 
 #include <cstdint>
 #include <fstream>

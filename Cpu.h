@@ -1,7 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include "ireadwrite.h"
+#include "IMemoryMapped.h"
 
 #include <cstdint>
 #include <string>

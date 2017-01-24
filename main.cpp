@@ -1,9 +1,10 @@
-#include <iostream>
-#include <QCoreApplication>
-
-#include "cpu.h"
+#include "Cpu.h"
 #include "instrs_6502.h"
-#include "memory.h"
+#include "Memory.h"
+
+#include <iostream>
+
+#include <QCoreApplication>
 
 using std::cout;
 using std::endl;

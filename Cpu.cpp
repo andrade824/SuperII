@@ -1,7 +1,7 @@
 /**
  * 6502 CPU Implementation.
  */
-#include "cpu.h"
+#include "Cpu.h"
 
 #include <cstdint>
 #include <iostream>

@@ -1,7 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "ireadwrite.h"
+#include "IMemoryMapped.h"
 
 #include <cstdint>
 #include <string>

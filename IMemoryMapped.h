@@ -1,5 +1,5 @@
-#ifndef IREADWRITE_H
-#define IREADWRITE_H
+#ifndef IMEMORYMAPPED_H
+#define IMEMORYMAPPED_H
 
 #include <cstdint>
 
@@ -33,4 +33,4 @@ public:
     virtual ~IMemoryMapped() {}
 };
 
-#endif // IREADWRITE_H
+#endif // IMEMORYMAPPED_H

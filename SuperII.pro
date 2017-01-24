@@ -13,16 +13,16 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    memory.cpp \
-    cpu.cpp \
-    instrs_6502.cpp
+    instrs_6502.cpp \
+    Cpu.cpp \
+    Memory.cpp
 
 OTHER_FILES += \
     TODO.txt \
     asm/*
 
 HEADERS += \
-    memory.h \
-    cpu.h \
-    ireadwrite.h \
-    instrs_6502.h
+    instrs_6502.h \
+    Cpu.h \
+    IMemoryMapped.h \
+    Memory.h
