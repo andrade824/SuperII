@@ -4,34 +4,30 @@
 #include "IMemoryMapped.h"
 
 #include <cstdint>
+#include <vector>
 
 /**
- * Defines a region within the 6502 CPU's address space and which component
- * will respond to memory accesses to that region.
+ * Provides the connection between all of the different components in the
+ * emulated system using a simple Read()/Write() interface.
  */
-struct MemoryRegion
-{
-    /**
-     * Inclusive start address of 'device' in the address space.
-     */
-    uint16_t start;
-
-    /**
-     * Inclusive end address of 'device' in the address space.
-     */
-    uint16_t end;
-
-    /**
-     * The device to perform reads/writes on when a memory request is made in
-     * the memory region going from 'start' to 'end' inclusively.
-     */
-    IMemoryMapped &device;
-};
-
-class SystemBus : public IMemoryMapped
+class SystemBus
 {
 public:
     SystemBus();
+
+    SystemBus(const SystemBus &copy) = delete;
+    SystemBus& operator=(const SystemBus &rhs) = delete;
+
+    void Register(IMemoryMapped *device);
+
+    uint8_t Read(uint16_t addr) const;
+    void Write(uint16_t addr, uint8_t data);
+
+private:
+    /**
+     * List of memory mapped devices that define the address space for this bus.
+     */
+    std::vector<IMemoryMapped*> _devices;
 };
 
 #endif // SYSTEMBUS_H

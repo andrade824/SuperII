@@ -3,60 +3,41 @@
  */
 #include "Memory.h"
 
+#include <cassert>
 #include <cstdint>
-#include <fstream>
+#include <cstring>
 #include <iostream>
-#include <string>
-
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::string;
 
 /**
  * Constructor.
  *
- * @param size Size of the memory to allocate.
+ * @param start_addr Start address of this memory device.
+ * @param end_addr End address of this memory device.
  */
-Memory::Memory(uint32_t size) : _memory(nullptr), _size(size)
+Memory::Memory(uint16_t start_addr, uint16_t end_addr, bool write_protect) :
+    IMemoryMapped(start_addr, end_addr),
+    _memory(nullptr),
+    _size(end_addr - start_addr + 1),
+    _write_protect(write_protect)
 {
-    if (size != 0)
-        _memory = new uint8_t[size];
+    assert(_size != 0);
+    _memory = new uint8_t[_size];
 }
 
 /**
- * Load a binary from a file and place it into memory.
+ * Copy data into this memory device starting at the bottom of memory.
  *
- * @param path Path to the executable to load up.
- * @param start_addr Address where to put the executable.
+ * @note If the data is larger than the memory, then the data will be
+ *       truncated to fit.
  *
- * @return True on successful load, false otherwise.
+ * @param data The data to copy.
+ * @param size The size of the data.
  */
-bool Memory::LoadExecutable(const string &path, uint16_t start_addr)
+void Memory::LoadMemory(const uint8_t *data, uint16_t data_size)
 {
-    bool file_loaded = true;
-    uint32_t size = 0;
+    uint16_t bytes_to_copy = (data_size > _size) ? _size : data_size;
 
-    ifstream file(path, std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
-        size = file.tellg();
-
-        if ((start_addr + size) <= _size) {
-            file.seekg(0, std::ios::beg);
-            file.read(reinterpret_cast<char*>(_memory + start_addr), size);
-        } else {
-            file_loaded = false;
-            cout << "Can't load executable with size " << size
-                 << " at starting address " << start_addr << endl;
-        }
-    } else {
-        file_loaded = false;
-        cout << "Failed to open executable '" << path << "'" << endl;
-    }
-
-    file.close();
-
-    return file_loaded;
+    std::memcpy(_memory, data, bytes_to_copy);
 }
 
 /**
@@ -70,13 +51,15 @@ uint8_t Memory::Read(uint16_t addr) const
 {
     uint8_t value = 0;
 
+    assert((uint16_t)(addr - _start_addr) < _size);
+
     if(addr == 0xF004) {
         value = getchar();
 
         if(value == '\n')
             value = '\r';
     } else
-        value = _memory[addr];
+        value = _memory[addr - _start_addr];
 
     return value;
 }
@@ -89,10 +72,12 @@ uint8_t Memory::Read(uint16_t addr) const
  */
 void Memory::Write(uint16_t addr, uint8_t data)
 {
-    if(addr == 0xF001)
+    if(addr == 0xF001) {
         printf("%c", data);
-    else
-        _memory[addr] = data;
+    } else {
+        if(!_write_protect)
+            _memory[addr - _start_addr] = data;
+    }
 }
 
 /**

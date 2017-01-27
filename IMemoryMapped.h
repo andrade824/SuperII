@@ -11,6 +11,35 @@ class IMemoryMapped
 {
 public:
     /**
+     * Constructor.
+     *
+     * @param start_addr Inclusive start address of this device in the address
+     *                   space.
+     * @param end_addr Inclusive end address of this device in the address
+     *                 space.
+     */
+    IMemoryMapped(uint16_t start_addr, uint16_t end_addr) :
+        _start_addr(start_addr),
+        _end_addr(end_addr)
+    { }
+
+    /**
+     * Start Address Getter.
+     */
+    uint16_t GetStartAddr() const
+    {
+        return _start_addr;
+    }
+
+    /**
+     * End Address Getter.
+     */
+    uint16_t GetEndAddr() const
+    {
+        return _end_addr;
+    }
+
+    /**
      * Read an 8-bit value from this device.
      *
      * @param addr The 16-bit address to read from.
@@ -31,6 +60,10 @@ public:
      * Required for polymorphism.
      */
     virtual ~IMemoryMapped() {}
+
+protected:
+    uint16_t _start_addr;
+    uint16_t _end_addr;
 };
 
 #endif // IMEMORYMAPPED_H

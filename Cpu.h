@@ -2,13 +2,11 @@
 #define CPU_H
 
 #include "IMemoryMapped.h"
+#include "SystemBus.h"
 
 #include <cstdint>
 #include <string>
 #include <vector>
-
-using std::string;
-using std::vector;
 
 /**
  * Helper macro for calling function pointers to member functions.
@@ -23,7 +21,7 @@ struct CpuInstruction {
     /**
      * Three letter acronym for this instruction.
      */
-    string acronym;
+    std::string acronym;
 
     /**
      * Function pointer to the method implementing the addressing mode.
@@ -107,10 +105,10 @@ enum CpuFlag {
  */
 class Cpu {
 public:
-    explicit Cpu(IMemoryMapped &bus, vector<CpuInstruction> &opcodes);
+    explicit Cpu(SystemBus &bus, std::vector<CpuInstruction> &opcodes);
 
     Cpu(const Cpu &copy) = delete;
-    Cpu & operator=(const Cpu &rhs) = delete;
+    Cpu& operator=(const Cpu &rhs) = delete;
 
     void Reset();
 
@@ -252,12 +250,12 @@ private:
     /**
      * System bus to perform read/write cycles on.
      */
-    IMemoryMapped &_bus;
+    SystemBus &_bus;
 
     /**
      * CPU Instruction Table (256 total instructions).
      */
-    vector<CpuInstruction> &_opcodes;
+    std::vector<CpuInstruction> &_opcodes;
 };
 
 #endif // CPU_H

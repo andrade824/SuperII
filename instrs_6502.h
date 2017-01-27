@@ -6,6 +6,6 @@
 #include <vector>
 
 // Vector of instructions to pass to a CPU object
-extern vector<CpuInstruction> instrs_6502;
+extern std::vector<CpuInstruction> instrs_6502;
 
 #endif // INSTRS_6502_H

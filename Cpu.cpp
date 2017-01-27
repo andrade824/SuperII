@@ -2,12 +2,11 @@
  * 6502 CPU Implementation.
  */
 #include "Cpu.h"
+#include "SystemBus.h"
 
 #include <cstdint>
 #include <iostream>
-
-using std::cout;
-using std::endl;
+#include <vector>
 
 /**
  * Constructor.
@@ -16,7 +15,7 @@ using std::endl;
  * @param opcodes A mapping between opcodes and the instructions/address modes
  *                that make up that opcode.
  */
-Cpu::Cpu(IMemoryMapped &bus, vector<CpuInstruction> &opcodes)
+Cpu::Cpu(SystemBus &bus, std::vector<CpuInstruction> &opcodes)
     : _bus(bus), _opcodes(opcodes)
 {
     Reset();
@@ -1076,5 +1075,6 @@ void Cpu::instr_tya()
  */
 void Cpu::instr_und()
 {
-    cout << "Undocumented Opcode used: 0x" << std::hex << _cur_opcode << endl;
+    std::cout << "Undocumented Opcode used: 0x"
+              << std::hex << unsigned(_cur_opcode) << std::endl;
 }
