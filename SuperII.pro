@@ -15,7 +15,8 @@ TEMPLATE = app
 SOURCES += main.cpp \
     instrs_6502.cpp \
     Cpu.cpp \
-    Memory.cpp
+    Memory.cpp \
+    SystemBus.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -25,4 +26,5 @@ HEADERS += \
     instrs_6502.h \
     Cpu.h \
     IMemoryMapped.h \
-    Memory.h
+    Memory.h \
+    SystemBus.h
