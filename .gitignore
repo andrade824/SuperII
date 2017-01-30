@@ -38,3 +38,4 @@ CMakeLists.txt.user
 
 # Ignore any output files
 build/
+object_script*

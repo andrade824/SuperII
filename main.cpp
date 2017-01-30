@@ -1,5 +1,6 @@
 #include "Cpu.h"
 #include "instrs_6502.h"
+#include "MainWindow.h"
 #include "Memory.h"
 #include "SystemBus.h"
 
@@ -8,34 +9,41 @@
 #include <iostream>
 #include <string>
 
-#include <QCoreApplication>
+#include <QApplication>
 
 bool LoadExecutable(Memory &mem, const std::string &path);
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
 
-    Memory mem(0, 0xFFFF, false);
-    SystemBus bus;
-
-    bus.Register(&mem);
-
-    /**
-     * Run test.bin at 0x4000, address 0x0210 should be 0xFF for passing.
-     *
-     * Run ehbasic.bin at 0xC000.
-     *
-     * To change the offset, you'll need to modify Memory.cpp's LoadMemory
-     * method.
-     */
-    if(LoadExecutable(mem, "asm/test.bin")) {
-        Cpu cpu(bus, instrs_6502);
-        cpu.Execute(10000000);
-
-        unsigned int value = bus.Read(0x210);
-        std::cout << "Value: 0x" << std::hex << value << std::endl;
+    while(1)
+    {
+        a.processEvents();
     }
+
+//    Memory mem(0, 0xFFFF, false);
+//    SystemBus bus;
+
+//    bus.Register(&mem);
+
+//    /**
+//     * Run test.bin at 0x4000, address 0x0210 should be 0xFF for passing.
+//     *
+//     * Run ehbasic.bin at 0xC000.
+//     *
+//     * To change the offset, you'll need to modify Memory.cpp's LoadMemory
+//     * method.
+//     */
+//    if(LoadExecutable(mem, "asm/test.bin")) {
+//        Cpu cpu(bus, instrs_6502);
+//        cpu.Execute(10000000);
+
+//        unsigned int value = bus.Read(0x210);
+//        std::cout << "Value: 0x" << std::hex << value << std::endl;
+//    }
 
     return a.exec();
 }
