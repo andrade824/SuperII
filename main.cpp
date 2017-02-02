@@ -19,10 +19,14 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    while(1)
+    /*while(1)
     {
+        sf::Clock;
         a.processEvents();
-    }
+        Emulator.RunFrame();
+        check clock
+        sleep if i have to
+    }*/
 
 //    Memory mem(0, 0xFFFF, false);
 //    SystemBus bus;

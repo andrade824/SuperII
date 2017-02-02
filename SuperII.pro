@@ -11,9 +11,10 @@ TEMPLATE = app
 
 win32 {
     LIBS += -LC:\Developer\SFML\lib
-    LIBS += -lsfml-audio -lsfml-graphics -lsfml-main -lsfml-network -lsfml-window -lsfml-system
     INCLUDEPATH += C:\Developer\SFML\include
 }
+
+LIBS += -lsfml-audio -lsfml-graphics -lsfml-network -lsfml-window -lsfml-system
 
 SOURCES += main.cpp \
     instrs_6502.cpp \

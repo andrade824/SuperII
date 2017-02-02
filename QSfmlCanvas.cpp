@@ -59,11 +59,18 @@ QPaintEngine* QSFMLCanvas::paintEngine() const
 
 void QSFMLCanvas::paintEvent(QPaintEvent*)
 {
+    clear();
+
     // Let the derived class do its specific stuff
     OnUpdate();
 
     // Display on screen
     display();
+}
+
+void QSFMLCanvas::resizeEvent(QResizeEvent *event)
+{
+    setView(sf::View(sf::FloatRect(0, 0, event->size().width(), event->size().height())));
 }
 
 QSFMLCanvas::~QSFMLCanvas()
