@@ -22,8 +22,7 @@ SOURCES += main.cpp \
     Memory.cpp \
     SystemBus.cpp \
     MainWindow.cpp \
-    Video.cpp \
-    QSfmlCanvas.cpp
+    Video.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -36,8 +35,7 @@ HEADERS += \
     Memory.h \
     SystemBus.h \
     MainWindow.h \
-    Video.h \
-    QSfmlCanvas.h
+    Video.h
 
 FORMS += \
     MainWindow.ui

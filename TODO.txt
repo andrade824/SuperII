@@ -1,12 +1,10 @@
+Main game loop:
 
-SystemBus (inherits from IMemoryMapped):
-struct MemoryRegion {
-    uint16_t start;
-    uint16_t end;
-    IMemoryMapped &device;
-}
-
-std::vector<MemoryRegion> memRegions {
-    {0x0000, 0x0FFF, MEMORY},
-    {0xC000, 0xCFFF, IO}
+while(1)
+{
+    sf::Clock;
+    app.processEvents();
+    Emulator.RunFrame();
+    check clock
+    sleep if i have to
 }

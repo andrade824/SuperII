@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "Video.h"
+
 #include <QMainWindow>
 
 namespace Ui {
@@ -12,7 +14,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(Video *emulator_video, QWidget *parent = 0);
     ~MainWindow();
 
 private:

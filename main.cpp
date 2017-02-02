@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 #include "Memory.h"
 #include "SystemBus.h"
+#include "Video.h"
 
 #include <cassert>
 #include <fstream>
@@ -15,18 +16,22 @@ bool LoadExecutable(Memory &mem, const std::string &path);
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QApplication app(argc, argv);
 
-    /*while(1)
+    Video *emulator_video = new Video(0);
+
+    MainWindow window(emulator_video);
+    window.show();
+
+    /**
+     * Keep processing events and running the emulator until the main window
+     * is closed.
+     */
+    while(window.isVisible())
     {
-        sf::Clock;
-        a.processEvents();
-        Emulator.RunFrame();
-        check clock
-        sleep if i have to
-    }*/
+        app.processEvents();
+        emulator_video->repaint();
+    }
 
 //    Memory mem(0, 0xFFFF, false);
 //    SystemBus bus;
@@ -49,7 +54,7 @@ int main(int argc, char *argv[])
 //        std::cout << "Value: 0x" << std::hex << value << std::endl;
 //    }
 
-    return a.exec();
+    return 0;
 }
 
 bool LoadExecutable(Memory &mem, const std::string &path)

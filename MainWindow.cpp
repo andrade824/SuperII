@@ -5,14 +5,13 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(Video *emulator_video, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
     QVBoxLayout *main_layout = new QVBoxLayout;
-    Video *emulator_video = new Video(0);
     main_layout->addWidget(emulator_video);
 
     QWidget *window = new QWidget();

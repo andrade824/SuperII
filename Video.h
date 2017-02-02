@@ -1,22 +1,34 @@
-#ifndef APPLEVIDEO_H
-#define APPLEVIDEO_H
-
-#include "QSfmlCanvas.h"
+#ifndef VIDEO_H
+#define VIDEO_H
 
 #include <cstdint>
 
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include <SFML/Graphics.hpp>
 
-class Video : public QSFMLCanvas
+#include <QPaintEngine>
+#include <QPaintEvent>
+#include <QResizeEvent>
+#include <QShowEvent>
+#include <QTimer>
+#include <QWidget>
+
+class Video : public QWidget, public sf::RenderWindow
 {
+    Q_OBJECT
+
 public:
-    Video(QWidget * parent);
+    Video(QWidget *parent = 0);
 
 private:
-    void OnInit();
-
     void OnUpdate();
+
+    virtual QPaintEngine* paintEngine() const;
+
+    virtual void showEvent(QShowEvent*);
+
+    virtual void paintEvent(QPaintEvent*);
+
+    virtual void resizeEvent(QResizeEvent *);
 
 private:
     /**
@@ -24,6 +36,11 @@ private:
      */
     static constexpr int VIDEO_WIDTH = 280;
     static constexpr int VIDEO_HEIGHT = 192;
+
+    /**
+     * True if the RenderWindow has been initialized already.
+     */
+    bool _initialized;
 
     /**
      * The pixels that will get drawn to the screen. Every four bytes represents
@@ -43,4 +60,4 @@ private:
      sf::Sprite _sprite;
 };
 
-#endif // APPLEVIDEO_H
+#endif // VIDEO_H
