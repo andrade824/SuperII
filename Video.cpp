@@ -53,12 +53,12 @@ void Video::showEvent(QShowEvent*)
             XFlush(QX11Info::display());
         #endif
 
-        // Create the SFML window with the widget handle
+        /**
+         * Create the SFML window with the widget handle and set it render at
+         * the correct Apple II resolution (280 by 192).
+         */
         sf::RenderWindow::create((sf::WindowHandle) winId());
-
-        // Setup the timer to trigger a refresh at specified framerate
-        //connect(&m_timer, SIGNAL(timeout()), this, SLOT(repaint()));
-        //m_timer.start();
+        setView(sf::View(sf::FloatRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)));
 
         _initialized = true;
     }
