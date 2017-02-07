@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     Memory.cpp \
     SystemBus.cpp \
     MainWindow.cpp \
-    Video.cpp
+    Video.cpp \
+    character_rom.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -35,7 +36,8 @@ HEADERS += \
     Memory.h \
     SystemBus.h \
     MainWindow.h \
-    Video.h
+    Video.h \
+    character_rom.h
 
 FORMS += \
     MainWindow.ui

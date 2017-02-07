@@ -1,6 +1,7 @@
 /**
  * Represents the Video generator module in the Apple II.
  */
+#include "character_rom.h"
 #include "Video.h"
 
 #ifdef Q_WS_X11
