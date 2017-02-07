@@ -46,7 +46,7 @@ public:
      *
      * @return The value at address 'addr'.
      */
-    virtual uint8_t Read(uint16_t addr) const = 0;
+    virtual uint8_t Read(uint16_t addr) = 0;
 
     /**
      *  Write an 8-bit value to a location within a 16-bit address space.

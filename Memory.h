@@ -16,7 +16,7 @@ public:
 
     void LoadMemory(const uint8_t *data, uint16_t data_size);
 
-    uint8_t Read(uint16_t addr) const override;
+    uint8_t Read(uint16_t addr) override;
 
     void Write(uint16_t addr, uint8_t data) override;
 

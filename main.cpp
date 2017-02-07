@@ -18,9 +18,14 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    Video *emulator_video = new Video(0);
+    Memory mem(0, 0xBFFF, false);
+    Video *video = new Video(mem);
+    SystemBus bus;
 
-    MainWindow window(emulator_video);
+    bus.Register(&mem);
+    bus.Register(video);
+
+    MainWindow window(video);
     window.show();
 
     /**
@@ -30,13 +35,8 @@ int main(int argc, char *argv[])
     while(window.isVisible())
     {
         app.processEvents();
-        emulator_video->repaint();
+        video->repaint();
     }
-
-//    Memory mem(0, 0xFFFF, false);
-//    SystemBus bus;
-
-//    bus.Register(&mem);
 
 //    /**
 //     * Run test.bin at 0x4000, address 0x0210 should be 0xFF for passing.

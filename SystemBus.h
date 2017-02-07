@@ -20,7 +20,7 @@ public:
 
     void Register(IMemoryMapped *device);
 
-    uint8_t Read(uint16_t addr) const;
+    uint8_t Read(uint16_t addr);
     void Write(uint16_t addr, uint8_t data);
 
 private:

@@ -47,7 +47,7 @@ void SystemBus::Register(IMemoryMapped *device)
  *
  * @return Data if a device is registered at 'addr', otherwise 0xFF.
  */
-uint8_t SystemBus::Read(uint16_t addr) const
+uint8_t SystemBus::Read(uint16_t addr)
 {
     auto found_device = find_if(_devices.begin(),
                                 _devices.end(),
