@@ -3,8 +3,8 @@ Main game loop:
 while(1)
 {
     sf::Clock;
-    app.processEvents();
     Emulator.RunFrame();
+    app.processEvents();
     check clock
     sleep if i have to
 }

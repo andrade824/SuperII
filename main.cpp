@@ -1,8 +1,5 @@
-#include "Cpu.h"
-#include "instrs_6502.h"
+#include "EmulatorCore.h"
 #include "MainWindow.h"
-#include "Memory.h"
-#include "SystemBus.h"
 #include "Video.h"
 
 #include <cassert>
@@ -10,32 +7,42 @@
 #include <iostream>
 #include <string>
 
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
+
 #include <QApplication>
 
 bool LoadExecutable(Memory &mem, const std::string &path);
+
+/**
+ * How many frames per second to update the video hardware at.
+ */
+static constexpr float FPS = 60.0f;
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    Memory mem(0, 0xBFFF, false);
-    Video *video = new Video(mem);
-    SystemBus bus;
+    EmulatorCore emulator;
 
-    bus.Register(&mem);
-    bus.Register(video);
-
-    MainWindow window(video);
+    MainWindow window(emulator.GetVideo());
     window.show();
 
     /**
      * Keep processing events and running the emulator until the main window
      * is closed.
      */
+    sf::Clock clock;
     while(window.isVisible())
     {
+        clock.restart();
         app.processEvents();
-        video->repaint();
+        emulator.RunFrame(FPS);
+
+        sf::Time delta = sf::seconds(1.0f / FPS) - clock.getElapsedTime();
+
+        if(delta.asSeconds() > 0)
+            sf::sleep(delta);
     }
 
 //    /**

@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     SystemBus.cpp \
     MainWindow.cpp \
     Video.cpp \
-    character_rom.cpp
+    character_rom.cpp \
+    EmulatorCore.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -37,7 +38,8 @@ HEADERS += \
     SystemBus.h \
     MainWindow.h \
     Video.h \
-    character_rom.h
+    character_rom.h \
+    EmulatorCore.h
 
 FORMS += \
     MainWindow.ui
