@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     EmulatorCore emulator;
-    LoadRom(emulator, "asm/apple2_rom.bin");
+    //LoadRom(emulator, "asm/apple2_rom.bin");
 
     MainWindow window(emulator.GetVideo());
     window.show();

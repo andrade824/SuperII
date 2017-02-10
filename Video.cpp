@@ -128,8 +128,21 @@ void Video::resizeEvent(QResizeEvent*)
  */
 void Video::render()
 {
-    if(!_use_graphics)
+    if(_use_graphics)
+    {
+        if(_use_lo_res)
+            render_lores();
+
+        if(!_use_full_screen)
+            render_text();
+    }
+    else
+    {
         render_text();
+
+        if(!_use_full_screen && _use_lo_res)
+            render_lores();
+    }
 }
 
 /**
@@ -236,7 +249,100 @@ void Video::set_text_pixel(bool pixel, bool invert, int x, int y)
     constexpr uint32_t BG_COLOR = 0xFF000000;
     const uint32_t color = (pixel ^ invert) ? FG_COLOR : BG_COLOR;
 
-    *(uint32_t *)(_pixels + (y * VIDEO_WIDTH * 4) + (x * 4) + 0) = color;
+    *(uint32_t *)(_pixels + (y * VIDEO_WIDTH * 4) + (x * 4)) = color;
+}
+
+/**
+ * Render a page of Lo-res graphics.
+ */
+void Video::render_lores()
+{
+    constexpr uint32_t PAGE1_START = 0x400;
+    constexpr uint32_t PAGE2_START = 0x800;
+
+    const uint16_t page_start = (_use_page1) ? PAGE1_START : PAGE2_START;
+
+    /**
+     * Always display the top 20 rows regardless of display mode.
+     */
+    for(int row = 0; row < 20; ++row)
+    {
+        const uint8_t group_offset = 0x28 * (row / 8);
+        const uint16_t row_offset = ((row & 0x7) * 0x80);
+        const uint16_t video_addr = page_start + group_offset + row_offset;
+
+        for(int col = 0; col < 40; ++col)
+            render_lores_block(_main_mem.Read(video_addr + col), col, row);
+    }
+
+    /**
+     * In mixed screen mode, text appears on the bottom four rows, so don't
+     * display the bottom four rows if the Video is in mixed screen mode.
+     */
+    if(_use_full_screen)
+    {
+        for(int row = 20; row < 24; ++row)
+        {
+            const uint16_t row_offset = ((row & 0x7) * 0x80);
+            const uint16_t video_addr = page_start + 0x50 + row_offset;
+
+            for(int col = 0; col < 40; ++col)
+                render_lores_block(_main_mem.Read(video_addr + col), col, row);
+        }
+    }
+
+}
+
+/**
+ * Draw a single pair of blocks (the blocks are vertically adjacent to each
+ * other).
+ *
+ * The blocks are four pixels tall by seven pixels wide. Together, the blocks
+ * make up one eight by seven block of pixels.
+ *
+ * The lower nybble of "block" describes the color for the upper block.
+ * The upper nybble of "block" describes the color for the lower block.
+ *
+ * @param block The color values for the two blocks.
+ * @param x X-position of the block.
+ * @param y Y-position of the block.
+ */
+void Video::render_lores_block(uint8_t block, int x, int y)
+{
+    static constexpr uint32_t colors[16] = {
+        0xFF000000, /* Black */
+        0xFF601EE3, /* Red */
+        0xFFCB2525, /* Dark Blue */
+        0xFFFD44FF, /* Purple */
+        0xFF60A300, /* Dark Green */
+        0xFF9C9C9C, /* Gray */
+        0xFFFDCF14, /* Medium Blue */
+        0xFFFFC3D0, /* Light Blue */
+        0xFF037260, /* Brown */
+        0xFF3C6AFF, /* Orange */
+        0xFF9C9C9C, /* Gray */
+        0xFFD0A0FF, /* Pink */
+        0xFF3CF514, /* Light Green */
+        0xFF8DDDD0, /* Yellow */
+        0xFFD0FF72, /* Aqua */
+        0xFFFFFFFF  /* White */
+    };
+
+    const int pixel_x = x * 28;
+    const int pixel_y = y * VIDEO_WIDTH * 32;
+
+    for(int row = 0; row < 8; ++row)
+    {
+        const uint32_t color = (row < 4) ? colors[block & 0xF] :
+                                           colors[(block & 0xF0) >> 4];
+
+        for(int col = 0; col < 7; ++col)
+        {
+            const int row_offset = pixel_y + (row * VIDEO_WIDTH * 4);
+            const int col_offset = pixel_x + (col * 4);
+            *(uint32_t *)(_pixels + row_offset + col_offset) = color;
+        }
+    }
 }
 
 /**

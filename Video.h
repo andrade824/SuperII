@@ -41,6 +41,8 @@ private:
     void render_char(uint8_t char_index, int x, int y);
     void set_text_pixel(bool pixel, bool invert, int x, int y);
 
+    void render_lores();
+    void render_lores_block(uint8_t block, int x, int y);
 
     void toggle_switch(uint16_t addr);
 
