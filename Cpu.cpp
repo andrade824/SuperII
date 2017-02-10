@@ -42,7 +42,7 @@ void Cpu::Reset()
  *
  * @param num_cycles The number of cycles to execute before stopping execution.
  *
- * @return The number of cycles that actually ran.
+ * @return The number of extra cycles that ran.
  */
 uint32_t Cpu::Execute(uint32_t num_cycles)
 {
@@ -51,7 +51,7 @@ uint32_t Cpu::Execute(uint32_t num_cycles)
     while (_total_cycles < (starting_cycles + num_cycles))
         SingleStep();
 
-    return _total_cycles - starting_cycles;
+    return _total_cycles - starting_cycles - num_cycles;
 }
 
 /**
@@ -1075,6 +1075,7 @@ void Cpu::instr_tya()
  */
 void Cpu::instr_und()
 {
-    std::cout << "Undocumented Opcode used: 0x"
-              << std::hex << unsigned(_cur_opcode) << std::endl;
+    /**
+     * Do nothing.
+     */
 }

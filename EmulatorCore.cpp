@@ -25,6 +25,19 @@ EmulatorCore::EmulatorCore() :
 }
 
 /**
+ * Load data into ROM.
+ *
+ * @note The size of the Apple II+ ROM is 12KB.
+ *
+ * @param data The data to load into ROM.
+ */
+void EmulatorCore::LoadRom(uint8_t data[ROM_SIZE])
+{
+    _rom.LoadMemory(data, ROM_SIZE);
+    _cpu.Reset();
+}
+
+/**
  * Run for one video frame (for 60FPS this is 16.667ms).
  *
  * This involves checking SFML events to grab keyboard input, running for one
@@ -32,7 +45,7 @@ EmulatorCore::EmulatorCore() :
  *
  * @param FPS How many frames per second to run at.
  */
-void EmulatorCore::RunFrame(float FPS)
+void EmulatorCore::RunFrame(int FPS)
 {
     /**
      * Calculate how many CPU cycles are to be executed in one frame.
@@ -40,29 +53,10 @@ void EmulatorCore::RunFrame(float FPS)
      * The standard Apple II CPU frequency is 1.023MHz.
      */
     constexpr uint32_t CPU_FREQ = 1023000;
-    const uint32_t CYCLES_IN_FRAME = static_cast<uint32_t>((1.0f / FPS) / (1.0f / CPU_FREQ));
+    const uint32_t CYCLES_PER_FRAME = CPU_FREQ / FPS;
 
-    Run(CYCLES_IN_FRAME);
+    _leftover_cycles = _cpu.Execute(CYCLES_PER_FRAME - _leftover_cycles);
 
-    UpdateVideo();
-}
-
-/**
- * Run for a certain amount of CPU cycles compensating for any extra cycles that
- * ran last time.
- *
- * @param num_cycles The number of cycles to run on the CPU.
- */
-void EmulatorCore::Run(uint32_t num_cycles)
-{
-    _leftover_cycles = _cpu.Execute(num_cycles - _leftover_cycles) - num_cycles;
-}
-
-/**
- * Force the video module to render a new frame.
- */
-void EmulatorCore::UpdateVideo()
-{
     _video->repaint();
 }
 

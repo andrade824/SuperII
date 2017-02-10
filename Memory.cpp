@@ -53,13 +53,7 @@ uint8_t Memory::Read(uint16_t addr)
 
     assert((uint16_t)(addr - _start_addr) < _size);
 
-    if(addr == 0xF004) {
-        value = getchar();
-
-        if(value == '\n')
-            value = '\r';
-    } else
-        value = _memory[addr - _start_addr];
+    value = _memory[addr - _start_addr];
 
     return value;
 }
@@ -72,12 +66,8 @@ uint8_t Memory::Read(uint16_t addr)
  */
 void Memory::Write(uint16_t addr, uint8_t data)
 {
-    if(addr == 0xF001) {
-        printf("%c", data);
-    } else {
-        if(!_write_protect)
-            _memory[addr - _start_addr] = data;
-    }
+    if(!_write_protect)
+        _memory[addr - _start_addr] = data;
 }
 
 /**

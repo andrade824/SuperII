@@ -9,7 +9,9 @@
     #include <X11/Xlib.h>
 #endif
 
+#include <SFML/System/Clock.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/Window.hpp>
 
 /**
@@ -26,6 +28,8 @@ Video::Video(Memory &mem, QWidget*) :
     _use_full_screen(true),
     _use_page1(true),
     _use_lo_res(true),
+    _flash_timer(),
+    _flash_invert(false),
     _initialized(false),
     _pixels(),
     _texture(),
@@ -96,7 +100,7 @@ void Video::paintEvent(QPaintEvent*)
 {
     clear();
 
-    OnUpdate();
+    render();
 
     _texture.update(_pixels);
 
@@ -122,28 +126,117 @@ void Video::resizeEvent(QResizeEvent*)
 /**
  * Redraw the screen.
  */
-void Video::OnUpdate()
+void Video::render()
 {
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+    if(!_use_graphics)
+        render_text();
+}
+
+/**
+ * Render text to the screen.
+ *
+ * This method handles the differences between page 1/2 and full screen/mixed
+ * screen modes.
+ *
+ * The video memory is mapped strangely. The first eight rows, second eight
+ * rows, and third eight rows have different starting addresses that are 0x28
+ * apart from each other (with the first starting address being the starting
+ * address of the page).
+ *
+ * Each of the eight rows within each of those groups is then 0x80 apart from
+ * each other.
+ */
+void Video::render_text()
+{
+    constexpr uint32_t PAGE1_START = 0x400;
+    constexpr uint32_t PAGE2_START = 0x800;
+
+    const uint16_t page_start = (_use_page1) ? PAGE1_START : PAGE2_START;
+
+    /**
+     * Handle flashing text characters.
+     */
+    if(_flash_timer.getElapsedTime().asMilliseconds() >= 250)
     {
-        for(int i = 0; i < VIDEO_WIDTH * VIDEO_HEIGHT * 4; i += 4)
+        _flash_invert = !_flash_invert;
+        _flash_timer.restart();
+    }
+
+    /**
+     * In mixed screen mode, text only appears on the bottom four lines, so only
+     * display the top 20 rows if the Video is in full screen mode.
+     */
+    if(_use_full_screen)
+    {
+        for(int row = 0; row < 20; ++row)
         {
-            _pixels[i] = 0x66;
-            _pixels[i + 1] = 0xFF;
-            _pixels[i + 2] = 0x00;
-            _pixels[i + 3] = 0xFF;
+            const uint8_t group_offset = 0x28 * (row / 8);
+            const uint16_t row_offset = ((row & 0x7) * 0x80);
+            const uint16_t video_addr = page_start + group_offset + row_offset;
+
+            for(int col = 0; col < 40; ++col)
+                render_char(_main_mem.Read(video_addr + col), col, row);
         }
     }
-    else
+
+    /**
+     * Always display the bottom four rows regardless of display mode.
+     */
+    for(int row = 20; row < 24; ++row)
     {
-        for(int i = 0; i < VIDEO_WIDTH * VIDEO_HEIGHT * 4; i += 4)
+        const uint16_t row_offset = ((row & 0x7) * 0x80);
+        const uint16_t video_addr = page_start + 0x50 + row_offset;
+
+        for(int col = 0; col < 40; ++col)
+            render_char(_main_mem.Read(video_addr + col), col, row);
+    }
+}
+
+/**
+ * Render a single character to the screen.
+ *
+ * @param char_index The index of the character to draw in the character ROM.
+ * @param x X-index of the character to draw.
+ * @param y Y-index of the character to draw.
+ */
+void Video::render_char(uint8_t char_index, int x, int y)
+{
+    const bool normal_char = (char_index & 0x80) ? true : false;
+    const bool invert_char = !normal_char && !(char_index & 0x40);
+    const bool flash_char = !normal_char && !invert_char;
+
+    const bool invert_colors = invert_char || (flash_char && _flash_invert);
+
+    const int pixel_x = x * 7;
+    const int pixel_y = y * 8;
+
+    for(int row = 0; row < 8; ++row)
+    {
+        for(int col = 0; col < 7; ++col)
         {
-            _pixels[i] = 0x66;
-            _pixels[i + 1] = 0x20;
-            _pixels[i + 2] = 0x82;
-            _pixels[i + 3] = 0xFF;
+            set_text_pixel(char_rom[char_index][row][col],
+                           invert_colors,
+                           pixel_x + (6 - col),
+                           pixel_y + row);
         }
     }
+}
+
+/**
+ * Sets a single pixel in the framebuffer for a text character.
+ *
+ * @param pixel The value from the character ROM for this pixel.
+ * @param invert Whether to invert the colors for this pixel.
+ * @param x X-position of the pixel.
+ * @param y Y-position of the pixel.
+ */
+void Video::set_text_pixel(bool pixel, bool invert, int x, int y)
+{
+    constexpr uint32_t FG_COLOR = 0xFF60A300;
+    constexpr uint32_t BG_COLOR = 0xFF000000;
+    const uint32_t color = (pixel ^ invert) ? FG_COLOR : BG_COLOR;
+
+    *(uint32_t *)(_pixels + (y * VIDEO_WIDTH * 4) + (x * 4) + 0) = color;
 }
 
 /**

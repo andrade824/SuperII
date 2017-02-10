@@ -3,6 +3,6 @@
 
 #include <bitset>
 
-extern std::bitset<7> chars[256][8];
+extern std::bitset<7> char_rom[256][8];
 
 #endif // CHARACTER_ROM_H

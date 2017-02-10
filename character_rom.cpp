@@ -2,7 +2,7 @@
  * Standard character ROM for an Apple II+. The same 64 characters are repeated
  * four times throughout the ROM.
  *
- * This ROM is based of of the 2513 character ROM. Each character is 5 pixels
+ * This ROM is based off of the 2513 character ROM. Each character is 5 pixels
  * wide by 7 pixels tall (with an empty column of pixels on each side, and an
  * empty row on top).
  *
@@ -17,7 +17,7 @@
  */
 #include <bitset>
 
-std::bitset<7> chars[256][8] = {
+std::bitset<7> char_rom[256][8] = {
     { 0x00, 0x1C, 0x22, 0x2A, 0x2E, 0x2C, 0x20, 0x1E },
     { 0x00, 0x08, 0x14, 0x22, 0x22, 0x3E, 0x22, 0x22 },
     { 0x00, 0x3C, 0x22, 0x22, 0x3C, 0x22, 0x22, 0x3C },

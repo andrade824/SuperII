@@ -3,6 +3,7 @@
 
 #include "Video.h"
 
+#include <QLabel>
 #include <QMainWindow>
 
 namespace Ui {
@@ -15,10 +16,14 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(Video *emulator_video, QWidget *parent = 0);
+
+    void SetStatusText(const QString &string);
+
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *_ui;
+    QLabel *_status_text;
 };
 
 #endif // MAINWINDOW_H

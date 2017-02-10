@@ -45,7 +45,7 @@ void SystemBus::Register(IMemoryMapped *device)
  *
  * @param addr The address to read from.
  *
- * @return Data if a device is registered at 'addr', otherwise 0xFF.
+ * @return Data if a device is registered at 'addr', otherwise 0x00.
  */
 uint8_t SystemBus::Read(uint16_t addr)
 {
@@ -60,7 +60,7 @@ uint8_t SystemBus::Read(uint16_t addr)
     if(found_device != _devices.end())
         return (*found_device)->Read(addr);
     else
-        return 0xFF;
+        return 0x00;
 }
 
 /**

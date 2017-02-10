@@ -6,6 +6,7 @@
 
 #include <cstdint>
 
+#include <SFML/System/Clock.hpp>
 #include <SFML/Graphics.hpp>
 
 #include <QPaintEngine>
@@ -22,21 +23,25 @@ class Video : public QWidget, public sf::RenderWindow, public IMemoryMapped
 public:
     Video(Memory &mem, QWidget *parent = 0);
 
+    uint8_t Read(uint16_t addr);
+    void Write(uint16_t addr, uint8_t);
+
 private:
-    void OnUpdate();
+    virtual void showEvent(QShowEvent*);
 
     virtual QPaintEngine* paintEngine() const;
-
-    virtual void showEvent(QShowEvent*);
 
     virtual void paintEvent(QPaintEvent*);
 
     virtual void resizeEvent(QResizeEvent *);
 
-    uint8_t Read(uint16_t addr);
-    void Write(uint16_t addr, uint8_t);
+    void render();
 
-private:
+    void render_text();
+    void render_char(uint8_t char_index, int x, int y);
+    void set_text_pixel(bool pixel, bool invert, int x, int y);
+
+
     void toggle_switch(uint16_t addr);
 
 private:
@@ -77,6 +82,17 @@ private:
      * Lo-res/Hi-res soft switch. True for lo-res graphics, false for hi-res.
      */
     bool _use_lo_res;
+
+    /**
+     * Timer used to determine when to flash characters (every 250ms).
+     */
+    sf::Clock _flash_timer;
+
+    /**
+     * True if "flashing" characters need to be inverted. This is set after
+     * checking flash_timer.
+     */
+    bool _flash_invert;
 
     /**
      * True if the RenderWindow has been initialized already.
