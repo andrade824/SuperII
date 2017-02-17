@@ -23,30 +23,33 @@ EmulatorCore::EmulatorCore() :
     _bus.Register(&_rom);
     _bus.Register(_video);
 
-    for(uint16_t i = 0x400; i < 0x7FF; ++i)
-        _bus.Write(i, 0xC1);
+    for(uint16_t i = 0x2000; i < 0x4000; i += 2)
+    {
+        _bus.Write(i, 0xAA);
+        _bus.Write(i + 1, 0xD5);
+    }
 
-    _bus.Write(0x650, 0xC8);
-    _bus.Write(0x651, 0xC5);
-    _bus.Write(0x652, 0xCC);
-    _bus.Write(0x653, 0xCC);
-    _bus.Write(0x654, 0xCF);
+//    _bus.Write(0x650, 0xC8);
+//    _bus.Write(0x651, 0xC5);
+//    _bus.Write(0x652, 0xCC);
+//    _bus.Write(0x653, 0xCC);
+//    _bus.Write(0x654, 0xCF);
 
-    _bus.Write(0x655, 0xA0);
+//    _bus.Write(0x655, 0xA0);
 
-    _bus.Write(0x656, 0xC3);
-    _bus.Write(0x657, 0xC1);
-    _bus.Write(0x658, 0xCC);
-    _bus.Write(0x659, 0xD6);
-    _bus.Write(0x65A, 0xC9);
-    _bus.Write(0x65B, 0xCE);
-    _bus.Write(0x65C, 0xA1);
-    _bus.Write(0x65D, 0x60);
+//    _bus.Write(0x656, 0xC3);
+//    _bus.Write(0x657, 0xC1);
+//    _bus.Write(0x658, 0xCC);
+//    _bus.Write(0x659, 0xD6);
+//    _bus.Write(0x65A, 0xC9);
+//    _bus.Write(0x65B, 0xCE);
+//    _bus.Write(0x65C, 0xA1);
+//    _bus.Write(0x65D, 0x60);
 
-    _bus.Write(0xC050, 0);
-    _bus.Write(0xC053, 0);
-    _bus.Write(0xC054, 0);
-    _bus.Write(0xC056, 0);
+//    _bus.Write(0xC050, 0);
+//    _bus.Write(0xC052, 0);
+//    _bus.Write(0xC054, 0);
+//    _bus.Write(0xC057, 0);
 }
 
 /**

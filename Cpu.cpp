@@ -5,7 +5,6 @@
 #include "SystemBus.h"
 
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 /**
@@ -62,13 +61,17 @@ void Cpu::SingleStep()
     bool crossed_page_boundary = false;
     _cur_opcode = _bus.Read(_context.pc++);
 
-    // Run the instruction
+    /**
+     * Run the instruction.
+     */
     crossed_page_boundary = CALL_MEMBER_FN(_opcodes[_cur_opcode].addr_mode)();
     CALL_MEMBER_FN(_opcodes[_cur_opcode].instr)();
 
     _num_instr++;
 
-    // Calculate cycles used
+    /**
+     * Calculate cycles used.
+     */
     _total_cycles += _opcodes[_cur_opcode].cycles;
     if(crossed_page_boundary && _opcodes[_cur_opcode].has_page_penalty)
         _total_cycles++;
@@ -117,7 +120,9 @@ void Cpu::do_branch(CpuFlag flag, uint8_t value)
     uint16_t old_pc = _context.pc;
     uint16_t rel = _effective_value;
 
-    // Sign extend the 8-bit number
+    /**
+     * Sign extend the 8-bit number.
+     */
     if(rel & 0x80)
         rel |= 0xFF00;
 

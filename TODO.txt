@@ -1,10 +1,24 @@
-Main game loop:
+Keyboard:
 
-while(1)
+std::map<sf::Event::KeyEvent, uint8_t> key_map = {
+    { { sf::Keyboard::Key::A, false, false, false}, 0xC1 },
+    { { sf::Keyboard::Key::A, false, true, false}, 0x81 },
+    { { sf::Keyboard::Key::A, false, false, true}, 0xC1 },
+    { { sf::Keyboard::Key::A, false, true, true}, 0x81 },
+};
+
+while (window.pollEvent(event))
 {
-    sf::Clock;
-    Emulator.RunFrame();
-    app.processEvents();
-    check clock
-    sleep if i have to
+    // check the type of the event...
+    switch (event.type)
+    {
+        // key pressed
+        case sf::Event::KeyPressed:
+            keyboard_register = key_map[event.key];
+            break;
+
+        // we don't process other types of events
+        default:
+            break;
+    }
 }

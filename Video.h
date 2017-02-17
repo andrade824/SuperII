@@ -44,6 +44,14 @@ private:
     void render_lores();
     void render_lores_block(uint8_t block, int x, int y);
 
+    void render_hires();
+    void render_hires_row(int row_num, uint16_t row_addr);
+    void render_hires_pixel(uint8_t color_group,
+                            uint8_t pixel,
+                            uint8_t adjacent_pixels,
+                            int x,
+                            int y);
+
     void toggle_switch(uint16_t addr);
 
 private:

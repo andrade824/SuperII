@@ -4,11 +4,6 @@
 #include "character_rom.h"
 #include "Video.h"
 
-#ifdef Q_WS_X11
-    #include <Qt/qx11info_x11.h>
-    #include <X11/Xlib.h>
-#endif
-
 #include <SFML/System/Clock.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Time.hpp>
@@ -63,14 +58,6 @@ void Video::showEvent(QShowEvent*)
 {
     if (!_initialized)
     {
-        /**
-         * Under X11, we need to flush the commands sent to the server to
-         * ensure that SFML will get an updated view of the window.
-         */
-        #ifdef Q_WS_X11
-            XFlush(QX11Info::display());
-        #endif
-
         /**
          * Create the SFML window with the widget handle and set it render at
          * the correct Apple II resolution (280 by 192).
@@ -132,6 +119,8 @@ void Video::render()
     {
         if(_use_lo_res)
             render_lores();
+        else
+            render_hires();
 
         if(!_use_full_screen)
             render_text();
@@ -142,6 +131,8 @@ void Video::render()
 
         if(!_use_full_screen && _use_lo_res)
             render_lores();
+        else if(!_use_full_screen && !_use_lo_res)
+            render_hires();
     }
 }
 
@@ -290,7 +281,6 @@ void Video::render_lores()
                 render_lores_block(_main_mem.Read(video_addr + col), col, row);
         }
     }
-
 }
 
 /**
@@ -343,6 +333,125 @@ void Video::render_lores_block(uint8_t block, int x, int y)
             *(uint32_t *)(_pixels + row_offset + col_offset) = color;
         }
     }
+}
+
+/**
+ * Render a page of Hi-res graphics.
+ */
+void Video::render_hires()
+{
+    constexpr uint32_t PAGE1_START = 0x2000;
+    constexpr uint32_t PAGE2_START = 0x4000;
+
+    const uint16_t page_start = (_use_page1) ? PAGE1_START : PAGE2_START;
+
+    /**
+     * Always display the top 20 rows regardless of display mode.
+     */
+    for(int block = 0; block < 20; ++block)
+    {
+        const uint8_t group_offset = 0x28 * (block / 8);
+        const uint16_t block_offset = ((block & 0x7) * 0x80);
+        const uint16_t video_addr = page_start + group_offset + block_offset;
+
+        for(int row = 0; row < 8; ++row)
+            render_hires_row((block * 8) + row, video_addr + (row * 0x400));
+    }
+
+    /**
+     * In mixed screen mode, text appears on the bottom four rows, so don't
+     * display the bottom four rows if the Video is in mixed screen mode.
+     */
+    if(_use_full_screen)
+    {
+        for(int block = 20; block < 24; ++block)
+        {
+            const uint16_t block_offset = ((block & 0x7) * 0x80);
+            const uint16_t video_addr = page_start + 0x50 + block_offset;
+
+            for(int row = 0; row < 8; ++row)
+                render_hires_row((block * 8) + row, video_addr + (row * 0x400));
+        }
+    }
+}
+
+/**
+ * Render an entire row of hi-res pixels.
+ *
+ * @param row_num Index of the row to render.
+ * @param row_addr Address where this row's contents are in memory.
+ */
+void Video::render_hires_row(int row_num, uint16_t row_addr)
+{
+    for(int col = 0; col < 40; ++col)
+    {
+        uint8_t prev_data = (col > 0) ? _main_mem.Read(row_addr + col - 1) : 0;
+        uint8_t data = _main_mem.Read(row_addr + col);
+        uint8_t next_data = (col < 39) ? _main_mem.Read(row_addr + col + 1) : 0;
+
+        uint8_t color_group = (data & 0x80) >> 7;
+
+        for(int pixel = 0; pixel < 7; ++pixel)
+        {
+            uint8_t adjacent_pixels = 0;
+
+            if(pixel == 0)
+            {
+                adjacent_pixels |= (prev_data & 0x40) | ((data >> 1) & 1);
+            }
+            else if(pixel == 6)
+            {
+                adjacent_pixels |= (next_data & 1) | ((data >> 5) & 1);
+            }
+            else
+            {
+                adjacent_pixels |= ((data >> (pixel - 1)) & 1) |
+                                   ((data >> (pixel + 1)) & 1);
+            }
+
+            render_hires_pixel(color_group,
+                               (data >> pixel) & 1,
+                               adjacent_pixels,
+                               (col * 7) + pixel,
+                               row_num);
+        }
+    }
+}
+
+/**
+ * Render a single hi-res pixel.
+ *
+ * @param color_group '0' for Purple/Green, otherwise Blue/Orange
+ * @param pixel The pixel to render.
+ * @param adjacent_pixel '0' if no pixel next to this is set, any other value
+ *                       otherwise.
+ * @param x X-coordinate of the pixel.
+ * @param y Y-coordinate of the pixel.
+ */
+void Video::render_hires_pixel(uint8_t color_group,
+                        uint8_t pixel,
+                        uint8_t adjacent_pixels,
+                        int x,
+                        int y)
+{
+    uint32_t color = 0;
+
+    if(pixel == 0)
+        color = 0xFF000000; /* Black */
+    else if(pixel != 0 && adjacent_pixels != 0)
+        color = 0xFFFFFFFF; /* White */
+    else if(pixel != 0 && color_group == 0 && (x & 1) == 0)
+        color = 0xFFFD44FF; /* Purple */
+    else if(pixel != 0 && color_group == 0 && (x & 1) == 1)
+        color = 0xFF3CF514; /* Green */
+    else if(pixel != 0 && color_group == 1 && (x & 1) == 0)
+        color = 0xFFFDCF14; /* Blue */
+    else if(pixel != 0 && color_group == 1 && (x & 1) == 1)
+        color = 0xFF3C6AFF; /* Orange */
+
+    const int row_offset = y * VIDEO_WIDTH * 4;
+    const int col_offset = x * 4;
+    *(uint32_t *)(_pixels + row_offset + col_offset) = color;
 }
 
 /**
