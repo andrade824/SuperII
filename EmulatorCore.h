@@ -2,9 +2,12 @@
 #define EMULATORCORE_H
 
 #include "Cpu.h"
+#include "Keyboard.h"
 #include "Memory.h"
 #include "SystemBus.h"
 #include "Video.h"
+
+#include <QKeyEvent>
 
 class EmulatorCore
 {
@@ -22,6 +25,8 @@ public:
     void RunFrame(int FPS);
 
     Video* GetVideo() const;
+
+    void UpdateKeyboardStrobe(const QKeyEvent *key);
 
 private:
     /**
@@ -50,6 +55,11 @@ private:
      * RenderWindow (so SFML can draw to it).
      */
     Video *_video;
+
+    /**
+     * Keyboard module.
+     */
+    Keyboard _keyboard;
 
     /**
      * The number of extra cycles ran after each CPU execution. These will be

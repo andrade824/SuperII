@@ -17,17 +17,30 @@ EmulatorCore::EmulatorCore() :
     _mem(0, 0xBFFF, false),
     _rom(0xD000, 0xFFFF, true),
     _video(new Video(_mem)),
+    _keyboard(),
     _leftover_cycles(0)
 {
     _bus.Register(&_mem);
     _bus.Register(&_rom);
     _bus.Register(_video);
+    _bus.Register(&_keyboard);
+
+    /**
+     * The Video module acts as the SFML window, so keyboard events get routed
+     * through it.
+     *
+     * Disable holding down a key to repeat the key press by default.
+     */
+    _video->setKeyRepeatEnabled(false);
 
     for(uint16_t i = 0x2000; i < 0x4000; i += 2)
     {
         _bus.Write(i, 0xAA);
         _bus.Write(i + 1, 0xD5);
     }
+
+//    sf::Event::KeyEvent key = { sf::Keyboard::Key::A, false, false, false, false};
+//    _keyboard.UpdateKeyboardStrobe(key);
 
 //    _bus.Write(0x650, 0xC8);
 //    _bus.Write(0x651, 0xC5);
@@ -97,4 +110,14 @@ void EmulatorCore::RunFrame(int FPS)
 Video* EmulatorCore::GetVideo() const
 {
     return _video;
+}
+
+/**
+ * Tell the Keyboard module that a key was pressed down.
+ *
+ * @param key The key that was pressed.
+ */
+void EmulatorCore::UpdateKeyboardStrobe(const QKeyEvent *key)
+{
+    _keyboard.UpdateKeyboardStrobe(key);
 }

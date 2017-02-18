@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     EmulatorCore emulator;
     LoadRom(emulator, "asm/apple2_rom.bin");
 
-    MainWindow window(emulator.GetVideo());
+    MainWindow window(emulator);
     window.show();
 
     /**

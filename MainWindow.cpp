@@ -13,14 +13,15 @@
  *        to render the emulator video output.
  * @param parent Parent for this widget.
  */
-MainWindow::MainWindow(Video *emulator_video, QWidget *parent) :
+MainWindow::MainWindow(EmulatorCore &emu, QWidget *parent) :
     QMainWindow(parent),
-    _ui(new Ui::MainWindow)
+    _ui(new Ui::MainWindow),
+    _emu(emu)
 {
     _ui->setupUi(this);
 
     QVBoxLayout *main_layout = new QVBoxLayout;
-    main_layout->addWidget(emulator_video);
+    main_layout->addWidget(emu.GetVideo());
 
     QWidget *window = new QWidget();
     window->setLayout(main_layout);
@@ -39,6 +40,21 @@ MainWindow::MainWindow(Video *emulator_video, QWidget *parent) :
 void MainWindow::SetStatusText(const QString &string)
 {
     _status_text->setText(string);
+}
+
+/**
+ * Pass a KeyPressEvent down to the EmulatorCore.
+ *
+ * @param event An even describing the key that was pressed.
+ */
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    /**
+     * Don't handle "auto-repeat keys" caused by holding the key down. Only check
+     * actual key presses.
+     */
+    if(!event->isAutoRepeat())
+        _emu.UpdateKeyboardStrobe(event);
 }
 
 /**

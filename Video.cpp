@@ -40,7 +40,7 @@ Video::Video(Memory &mem, QWidget*) :
     /**
      * This widget only gets focus if it's clicked.
      */
-    setFocusPolicy(Qt::ClickFocus);
+    setFocusPolicy(Qt::NoFocus);
 
     /**
       * Setup the texture/sprite to draw the framebuffer on. The texture
