@@ -4,6 +4,39 @@
 #include "Keyboard.h"
 
 #include <QKeyEvent>
+
+/**
+ * Hashes a Qt KeyEvent to a single 32-bit number.
+ *
+ * @param key The key to hash.
+ *
+ * @return The hashed value.
+ */
+std::size_t KeyEventHasher::operator()(const QKeyEvent &key) const
+{
+    return static_cast<uint32_t>(key.key()) |
+           ((key.modifiers() & Qt::AltModifier) ? 0x80000000 : 0) |
+           ((key.modifiers() & Qt::ControlModifier) ? 0x40000000 : 0) |
+           ((key.modifiers() & Qt::ShiftModifier) ? 0x20000000 : 0) |
+           ((key.modifiers() & Qt::MetaModifier) ? 0x10000000 : 0);
+}
+
+/**
+ * Keyboard event equality operator overload meant to be used by the
+ * unordered_map data structure.
+ *
+ * @param lhs Left hand side of the equality.
+ * @param rhs Right hand side of the equality.
+ *
+ * @return True if the two events are identical, otherwise false.
+ */
+bool operator==(const QKeyEvent &lhs, const QKeyEvent &rhs)
+{
+    return (lhs.key() == rhs.key()) &&
+           (lhs.modifiers() == rhs.modifiers()) &&
+           (lhs.type() == rhs.type());
+}
+
 /**
  * Constructor.
  */
@@ -25,7 +58,7 @@ void Keyboard::UpdateKeyboardStrobe(const QKeyEvent *key)
     }
 }
 
-void Keyboard::UpdateKeyboardMapping(QKeyEvent key, uint8_t scancode)
+void Keyboard::UpdateKeyboardMapping(QKeyEvent, uint8_t)
 {
 
 }
@@ -60,21 +93,3 @@ void Keyboard::Write(uint16_t addr, uint8_t)
     if(addr == 0xC010)
         _data &= 0x7F;
 }
-
-/**
- * Keyboard event comparison operator overload meant to be used by the
- * unordered_map data structure.
- *
- * @param lhs Left hand side of the equality.
- * @param rhs Right hand side of the equality.
- *
- * @return True if the two events are identical, otherwise false.
- */
-//bool operator==(const sf::Event::KeyEvent &lhs, const sf::Event::KeyEvent &rhs)
-//{
-//    return (lhs.code == rhs.code) &&
-//           (lhs.alt == rhs.alt) &&
-//           (lhs.control == rhs.control) &&
-//           (lhs.shift == rhs.shift) &&
-//           (lhs.system == rhs.system);
-//}

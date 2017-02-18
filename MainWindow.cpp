@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QKeyEvent>
 
 /**
  * Constructor.
@@ -50,8 +51,8 @@ void MainWindow::SetStatusText(const QString &string)
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     /**
-     * Don't handle "auto-repeat keys" caused by holding the key down. Only check
-     * actual key presses.
+     * Don't handle "auto-repeat keys" caused by holding the key down. Only
+     * check actual key presses.
      */
     if(!event->isAutoRepeat())
         _emu.UpdateKeyboardStrobe(event);
