@@ -128,11 +128,6 @@ void Video::render()
     else
     {
         render_text();
-
-        if(!_use_full_screen && _use_lo_res)
-            render_lores();
-        else if(!_use_full_screen && !_use_lo_res)
-            render_hires();
     }
 }
 
@@ -167,10 +162,10 @@ void Video::render_text()
     }
 
     /**
-     * In mixed screen mode, text only appears on the bottom four lines, so only
-     * display the top 20 rows if the Video is in full screen mode.
+     * In mixed graphics mode, text only appears on the bottom four lines, so
+     * only display the top 20 rows if the Video is in text mode.
      */
-    if(_use_full_screen)
+    if(!_use_graphics)
     {
         for(int row = 0; row < 20; ++row)
         {

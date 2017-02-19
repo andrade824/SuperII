@@ -318,6 +318,7 @@ private:
         { { QEvent::KeyPress, Qt::Key_Right, Qt::ControlModifier |
                                              Qt::ShiftModifier }, 0x95 },
 
+        { { QEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier }, 0x88 },
         { { QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier }, 0x88 },
         { { QEvent::KeyPress, Qt::Key_Left, Qt::ControlModifier }, 0x88 },
         { { QEvent::KeyPress, Qt::Key_Left, Qt::ShiftModifier }, 0x88 },
