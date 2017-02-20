@@ -1,4 +1,4 @@
-QT += core gui widgets
+QT += core gui widgets multimedia
 
 CONFIG += c++11 warn_on
 OBJECTS_DIR = build
@@ -25,7 +25,8 @@ SOURCES += main.cpp \
     Video.cpp \
     character_rom.cpp \
     EmulatorCore.cpp \
-    Keyboard.cpp
+    Keyboard.cpp \
+    Speaker.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -41,7 +42,8 @@ HEADERS += \
     Video.h \
     character_rom.h \
     EmulatorCore.h \
-    Keyboard.h
+    Keyboard.h \
+    Speaker.h
 
 FORMS += \
     MainWindow.ui

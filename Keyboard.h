@@ -51,7 +51,7 @@ private:
     /**
      * Default mapping of keyboard keys.
      */
-    std::unordered_map< QKeyEvent, uint8_t, KeyEventHasher> _key_map = {
+    std::unordered_map<QKeyEvent, uint8_t, KeyEventHasher> _key_map = {
         { { QEvent::KeyPress, Qt::Key_Space, Qt::NoModifier }, 0xA0 },
         { { QEvent::KeyPress, Qt::Key_Space, Qt::ControlModifier }, 0xA0 },
         { { QEvent::KeyPress, Qt::Key_Space, Qt::ShiftModifier }, 0xA0 },

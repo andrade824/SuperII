@@ -18,12 +18,14 @@ EmulatorCore::EmulatorCore() :
     _rom(0xD000, 0xFFFF, true),
     _video(new Video(_mem)),
     _keyboard(),
+    _speaker(),
     _leftover_cycles(0)
 {
     _bus.Register(&_mem);
     _bus.Register(&_rom);
     _bus.Register(_video);
     _bus.Register(&_keyboard);
+    _bus.Register(&_speaker);
 
     /**
      * The Video module acts as the SFML window, so keyboard events get routed

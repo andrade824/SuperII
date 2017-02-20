@@ -4,6 +4,7 @@
 #include "Cpu.h"
 #include "Keyboard.h"
 #include "Memory.h"
+#include "Speaker.h"
 #include "SystemBus.h"
 #include "Video.h"
 
@@ -60,6 +61,11 @@ private:
      * Keyboard module.
      */
     Keyboard _keyboard;
+
+    /**
+     * Speaker module.
+     */
+    Speaker _speaker;
 
     /**
      * The number of extra cycles ran after each CPU execution. These will be
