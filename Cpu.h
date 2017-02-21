@@ -116,6 +116,8 @@ public:
 
     void SingleStep();
 
+    uint32_t GetTotalCycles() const;
+
 private:
     uint16_t bus_read16(uint16_t addr) const;
 

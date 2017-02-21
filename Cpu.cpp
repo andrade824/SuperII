@@ -78,6 +78,16 @@ void Cpu::SingleStep()
 }
 
 /**
+ * Getter for _total_cycles.
+ *
+ * @return The number of cycles executed since the CPU was started.
+ */
+uint32_t Cpu::GetTotalCycles() const
+{
+    return _total_cycles;
+}
+
+/**
  * Helper function for performing "16-bit" bus reads. In reality, this will
  * perform two 8-bit reads since the 6502 only has an 8-bit data bus.
  *

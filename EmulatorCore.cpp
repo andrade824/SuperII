@@ -18,7 +18,7 @@ EmulatorCore::EmulatorCore() :
     _rom(0xD000, 0xFFFF, true),
     _video(new Video(_mem)),
     _keyboard(),
-    _speaker(),
+    _speaker(_cpu),
     _leftover_cycles(0)
 {
     _bus.Register(&_mem);
@@ -26,45 +26,6 @@ EmulatorCore::EmulatorCore() :
     _bus.Register(_video);
     _bus.Register(&_keyboard);
     _bus.Register(&_speaker);
-
-    /**
-     * The Video module acts as the SFML window, so keyboard events get routed
-     * through it.
-     *
-     * Disable holding down a key to repeat the key press by default.
-     */
-    _video->setKeyRepeatEnabled(false);
-
-    for(uint16_t i = 0x2000; i < 0x4000; i += 2)
-    {
-        _bus.Write(i, 0xAA);
-        _bus.Write(i + 1, 0xD5);
-    }
-
-//    sf::Event::KeyEvent key = { sf::Keyboard::Key::A, false, false, false, false};
-//    _keyboard.UpdateKeyboardStrobe(key);
-
-//    _bus.Write(0x650, 0xC8);
-//    _bus.Write(0x651, 0xC5);
-//    _bus.Write(0x652, 0xCC);
-//    _bus.Write(0x653, 0xCC);
-//    _bus.Write(0x654, 0xCF);
-
-//    _bus.Write(0x655, 0xA0);
-
-//    _bus.Write(0x656, 0xC3);
-//    _bus.Write(0x657, 0xC1);
-//    _bus.Write(0x658, 0xCC);
-//    _bus.Write(0x659, 0xD6);
-//    _bus.Write(0x65A, 0xC9);
-//    _bus.Write(0x65B, 0xCE);
-//    _bus.Write(0x65C, 0xA1);
-//    _bus.Write(0x65D, 0x60);
-
-//    _bus.Write(0xC050, 0);
-//    _bus.Write(0xC052, 0);
-//    _bus.Write(0xC054, 0);
-//    _bus.Write(0xC057, 0);
 }
 
 /**
@@ -101,6 +62,8 @@ void EmulatorCore::RunFrame(int FPS)
     _leftover_cycles = _cpu.Execute(CYCLES_PER_FRAME - _leftover_cycles);
 
     _video->repaint();
+
+    _speaker.PlayAudio(CYCLES_PER_FRAME - _leftover_cycles);
 }
 
 /**
