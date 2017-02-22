@@ -40,9 +40,11 @@ Speaker::Speaker(Cpu &cpu) :
     _format.setSampleSize(16);
     _format.setCodec("audio/pcm");
     _format.setByteOrder(QAudioFormat::LittleEndian);
-    _format.setSampleType(QAudioFormat::UnSignedInt);
+    _format.setSampleType(QAudioFormat::SignedInt);
 
     _output = new QAudioOutput(_format);
+    _output->setBufferSize(10000);
+    _audio_io = _output->start();
 }
 
 /**
@@ -57,37 +59,29 @@ Speaker::Speaker(Cpu &cpu) :
  */
 void Speaker::PlayAudio(uint32_t num_cycles)
 {
-    if(!_toggle_cycles.empty())
+    constexpr float CYCLES_PER_SAMPLE = 1023000.0f / SAMPLE_RATE;
+    const unsigned int num_samples =
+            static_cast<unsigned int>(num_cycles / CYCLES_PER_SAMPLE);
+
+    int16_t *samples = new int16_t[num_samples];
+
+    for(unsigned int i = 0; i < num_samples; ++i)
     {
-        constexpr float CYCLES_PER_SAMPLE = 1023000.0f / SAMPLE_RATE;
-        const unsigned int num_samples =
-                static_cast<unsigned int>(num_cycles / CYCLES_PER_SAMPLE);
-
-        uint16_t *samples = new uint16_t[num_samples];
-
-        for(unsigned int i = 0; i < num_samples; ++i)
+        if(!_toggle_cycles.empty()  &&
+           ((i * CYCLES_PER_SAMPLE + _prev_cycle_count) >=
+           _toggle_cycles.front()))
         {
-            if(!_toggle_cycles.empty()  &&
-               ((i * CYCLES_PER_SAMPLE + _prev_cycle_count) >=
-               _toggle_cycles.front()))
-            {
-                _toggle_cycles.pop();
-                _speaker_state = !_speaker_state;
-            }
-
-            samples[i] = (_speaker_state) ? 0xFFFF : 0x0;
+            _toggle_cycles.pop();
+            _speaker_state = !_speaker_state;
         }
 
-        if(_output->state() != QAudio::ActiveState)
-        {
-            _output->stop();
-            _audio_io = _output->start();
-        }
 
-        _audio_io->write(reinterpret_cast<char*>(samples), num_samples * 2);
-
-        delete [] samples;
+        samples[i] = (_speaker_state) ? 16000 : 0;
     }
+
+    _audio_io->write(reinterpret_cast<char*>(samples), num_samples * 2);
+
+    delete [] samples;
 
     _prev_cycle_count = _cpu.GetTotalCycles();
 }

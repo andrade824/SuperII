@@ -14,7 +14,7 @@ win32 {
     INCLUDEPATH += C:\Developer\SFML\include
 }
 
-LIBS += -lsfml-audio -lsfml-graphics -lsfml-network -lsfml-window -lsfml-system
+LIBS += -lsfml-graphics -lsfml-network -lsfml-window -lsfml-system -lsfml-audio
 
 SOURCES += main.cpp \
     instrs_6502.cpp \
