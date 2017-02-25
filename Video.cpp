@@ -38,7 +38,8 @@ Video::Video(Memory &mem, QWidget*) :
     setAttribute(Qt::WA_NoSystemBackground);
 
     /**
-     * This widget only gets focus if it's clicked.
+     * This widget doesn't get focus (keyboard events are handled by the
+     * MainWindow).
      */
     setFocusPolicy(Qt::NoFocus);
 
@@ -50,6 +51,78 @@ Video::Video(Memory &mem, QWidget*) :
     _texture.create(VIDEO_WIDTH, VIDEO_HEIGHT);
     _sprite.setTexture(_texture, true);
 }
+
+/**
+ * Reset the video module to its default state.
+ */
+void Video::Reset()
+{
+    _use_graphics = false;
+    _use_full_screen = true;
+    _use_page1 = true;
+    _use_lo_res = true;
+}
+
+/**
+ * Toggle a soft-switch through a read operation.
+ *
+ * @param addr The address to read.
+ *
+ * @return Always returns zero.
+ */
+uint8_t Video::Read(uint16_t addr)
+{
+    toggle_switch(addr);
+
+    return 0;
+}
+
+/**
+ * Toggle a soft-switch through a write operation.
+ *
+ * @param addr The address to write.
+ */
+void Video::Write(uint16_t addr, uint8_t)
+{
+    toggle_switch(addr);
+}
+
+/**
+ * Save the Video state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void Video::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(&_use_graphics),
+                 sizeof(_use_graphics));
+
+    output.write(reinterpret_cast<char*>(&_use_full_screen),
+                 sizeof(_use_full_screen));
+
+    output.write(reinterpret_cast<char*>(&_use_page1), sizeof(_use_page1));
+
+    output.write(reinterpret_cast<char*>(&_use_lo_res), sizeof(_use_lo_res));
+}
+
+/**
+ * Load the Video state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void Video::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(&_use_graphics),
+                 sizeof(_use_graphics));
+
+    input.read(reinterpret_cast<char*>(&_use_full_screen),
+                 sizeof(_use_full_screen));
+
+    input.read(reinterpret_cast<char*>(&_use_page1), sizeof(_use_page1));
+
+    input.read(reinterpret_cast<char*>(&_use_lo_res), sizeof(_use_lo_res));
+}
+
 
 /**
  * A showEvent is triggered just display a QWidget is displayed.
@@ -447,30 +520,6 @@ void Video::render_hires_pixel(uint8_t color_group,
     const int row_offset = y * VIDEO_WIDTH * 4;
     const int col_offset = x * 4;
     *(uint32_t *)(_pixels + row_offset + col_offset) = color;
-}
-
-/**
- * Toggle a soft-switch through a read operation.
- *
- * @param addr The address to read.
- *
- * @return Always returns zero.
- */
-uint8_t Video::Read(uint16_t addr)
-{
-    toggle_switch(addr);
-
-    return 0;
-}
-
-/**
- * Toggle a soft-switch through a write operation.
- *
- * @param addr The address to write.
- */
-void Video::Write(uint16_t addr, uint8_t)
-{
-    toggle_switch(addr);
 }
 
 /**

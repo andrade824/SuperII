@@ -88,6 +88,42 @@ uint32_t Cpu::GetTotalCycles() const
 }
 
 /**
+ * Save the CPU state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void Cpu::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(&_cur_opcode), sizeof(_cur_opcode));
+    output.write(reinterpret_cast<char*>(&_num_instr), sizeof(_num_instr));
+    output.write(reinterpret_cast<char*>(&_total_cycles),
+                 sizeof(_total_cycles));
+    output.write(reinterpret_cast<char*>(&_effective_addr),
+                 sizeof(_effective_addr));
+    output.write(reinterpret_cast<char*>(&_effective_value),
+                 sizeof(_effective_value));
+    output.write(reinterpret_cast<char*>(&_context), sizeof(_context));
+}
+
+/**
+ * Load the CPU state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void Cpu::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(&_cur_opcode), sizeof(_cur_opcode));
+    input.read(reinterpret_cast<char*>(&_num_instr), sizeof(_num_instr));
+    input.read(reinterpret_cast<char*>(&_total_cycles),
+                 sizeof(_total_cycles));
+    input.read(reinterpret_cast<char*>(&_effective_addr),
+                 sizeof(_effective_addr));
+    input.read(reinterpret_cast<char*>(&_effective_value),
+                 sizeof(_effective_value));
+    input.read(reinterpret_cast<char*>(&_context), sizeof(_context));
+}
+
+/**
  * Helper function for performing "16-bit" bus reads. In reality, this will
  * perform two 8-bit reads since the 6502 only has an 8-bit data bus.
  *

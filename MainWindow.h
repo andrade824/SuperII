@@ -22,10 +22,31 @@ public:
 
     ~MainWindow();
 
+private slots:
+    void on_actionReset_triggered();
+
+    void on_actionPower_Cycle_triggered();
+
+    void on_actionQuick_Save_triggered();
+
+    void on_actionQuick_Load_triggered();
+
+    void on_actionSave_State_triggered();
+
+    void on_actionLoad_State_triggered();
+
 private:
     void keyPressEvent(QKeyEvent *event);
 
+    void save_state(QString filename);
+    void load_state(QString filename);
+
 private:
+    /**
+     * The standard timeout for status bar messages.
+     */
+    static constexpr int STATUS_TEXT_TIMEOUT = 3000;
+
     /**
      * Contains all of the UI elements generated in the Qt Forms Designer.
      */

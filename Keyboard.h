@@ -2,8 +2,10 @@
 #define KEYBOARD_H
 
 #include "IMemoryMapped.h"
+#include "IState.h"
 
 #include <cstddef>
+#include <fstream>
 #include <functional>
 #include <unordered_map>
 
@@ -24,17 +26,22 @@ struct KeyEventHasher
  */
 bool operator==(const QKeyEvent &lhs, const QKeyEvent &rhs);
 
-class Keyboard : public IMemoryMapped
+class Keyboard : public IMemoryMapped, public IState
 {
 public:
     Keyboard();
+
+    void Reset();
 
     void UpdateKeyboardStrobe(const QKeyEvent *key);
 
     void UpdateKeyboardMapping(QKeyEvent key, uint8_t scancode);
 
-    uint8_t Read(uint16_t addr);
-    void Write(uint16_t addr, uint8_t);
+    uint8_t Read(uint16_t addr) override;
+    void Write(uint16_t addr, uint8_t) override;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
 
 private:
     /**

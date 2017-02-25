@@ -48,6 +48,18 @@ Speaker::Speaker(Cpu &cpu) :
 }
 
 /**
+ * Reset the speaker state.
+ */
+void Speaker::Reset()
+{
+    _prev_cycle_count = 0;
+    _speaker_state = false;
+
+    while(!_toggle_cycles.empty())
+        _toggle_cycles.pop();
+}
+
+/**
  * Play "num_cycles" worth of audio data.
  *
  * @note It is critical that this function be called at the same rate as the CPU
@@ -110,6 +122,40 @@ void Speaker::Write(uint16_t addr, uint8_t)
 {
     if(addr == SPEAKER_START_ADDR)
         _toggle_cycles.push(_cpu.GetTotalCycles());
+}
+
+/**
+ * Save the Speaker state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void Speaker::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(&_prev_cycle_count),
+                 sizeof(_prev_cycle_count));
+
+    output.write(reinterpret_cast<char*>(&_speaker_state),
+                 sizeof(_speaker_state));
+}
+
+/**
+ * Load the Speaker state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void Speaker::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(&_prev_cycle_count),
+                 sizeof(_prev_cycle_count));
+
+    input.read(reinterpret_cast<char*>(&_speaker_state),
+                 sizeof(_speaker_state));
+
+    /**
+     * Ensure any sound data from before the LoadState doesn't play.
+     */
+    while(!_toggle_cycles.empty())
+        _toggle_cycles.pop();
 }
 
 /**

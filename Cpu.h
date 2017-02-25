@@ -1,10 +1,11 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include "IMemoryMapped.h"
+#include "IState.h"
 #include "SystemBus.h"
 
 #include <cstdint>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -103,7 +104,8 @@ enum CpuFlag {
 /**
  * 6502 CPU Core.
  */
-class Cpu {
+class Cpu : public IState
+{
 public:
     explicit Cpu(SystemBus &bus, std::vector<CpuInstruction> &opcodes);
 
@@ -117,6 +119,9 @@ public:
     void SingleStep();
 
     uint32_t GetTotalCycles() const;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
 
 private:
     uint16_t bus_read16(uint16_t addr) const;

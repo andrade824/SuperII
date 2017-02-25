@@ -46,6 +46,14 @@ Keyboard::Keyboard() :
 { }
 
 /**
+ * Reset the keyboard strobe.
+ */
+void Keyboard::Reset()
+{
+    _data = 0;
+}
+
+/**
  * Update the keyboard strobe register if a valid key was pressed.
  *
  * @param key The key that was pressed.
@@ -92,4 +100,24 @@ void Keyboard::Write(uint16_t addr, uint8_t)
 {
     if(addr == 0xC010)
         _data &= 0x7F;
+}
+
+/**
+ * Save the Keyboard state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void Keyboard::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(&_data), sizeof(_data));
+}
+
+/**
+ * Load the Keyboard state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void Keyboard::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(&_data), sizeof(_data));
 }

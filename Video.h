@@ -2,9 +2,11 @@
 #define VIDEO_H
 
 #include "IMemoryMapped.h"
+#include "IState.h"
 #include "Memory.h"
 
 #include <cstdint>
+#include <fstream>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/Graphics.hpp>
@@ -16,15 +18,24 @@
 #include <QTimer>
 #include <QWidget>
 
-class Video : public QWidget, public sf::RenderWindow, public IMemoryMapped
+class Video :
+        public QWidget,
+        public sf::RenderWindow,
+        public IMemoryMapped,
+        public IState
 {
     Q_OBJECT
 
 public:
     Video(Memory &mem, QWidget *parent = 0);
 
-    uint8_t Read(uint16_t addr);
-    void Write(uint16_t addr, uint8_t);
+    void Reset();
+
+    uint8_t Read(uint16_t addr) override;
+    void Write(uint16_t addr, uint8_t) override;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
 
 private:
     virtual void showEvent(QShowEvent*);

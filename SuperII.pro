@@ -43,7 +43,8 @@ HEADERS += \
     character_rom.h \
     EmulatorCore.h \
     Keyboard.h \
-    Speaker.h
+    Speaker.h \
+    IState.h
 
 FORMS += \
     MainWindow.ui

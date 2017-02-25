@@ -1,24 +1,18 @@
-Keyboard:
+Keyboard Settings:
+0) Implement emulator "pause/play" feature.
+1) Remove any key mappings that have more than 2 keys per scancode
+2) Create window with tableview
+3) Create keyboard mappings getter in keyboard/emulatorcore
+4) Create array that conerts scancode numbers into Ascii ('a', 'CTRL+M', etc.)
+5) Under the tableview, have a small area that lets you change the key and
+   and alternate keys. This will be a label ("Key/Alternate Key"), textbox
+   (with the text of the current key-combo), and a "Change" button. When you
+   click the Change button, the text on the button changes to "Revert", and the
+   textbox says "Press a key combination...". This loops on a variable that will
+   get set in the KeyReleased event (while keycombo == Key::Unknown).
+6) When the "OK" button gets clicked, apply these settings to the emulator (the
+   settings dialog has a reference to the EmulatorCore).
 
-std::map<sf::Event::KeyEvent, uint8_t> key_map = {
-    { { sf::Keyboard::Key::A, false, false, false}, 0xC1 },
-    { { sf::Keyboard::Key::A, false, true, false}, 0x81 },
-    { { sf::Keyboard::Key::A, false, false, true}, 0xC1 },
-    { { sf::Keyboard::Key::A, false, true, true}, 0x81 },
-};
-
-while (window.pollEvent(event))
-{
-    // check the type of the event...
-    switch (event.type)
-    {
-        // key pressed
-        case sf::Event::KeyPressed:
-            keyboard_register = key_map[event.key];
-            break;
-
-        // we don't process other types of events
-        default:
-            break;
-    }
-}
+Make sure escape doesn't cause the dialog to escape (since escape is a valid key
+you can map to):
+http://stackoverflow.com/questions/3127228/qt-esc-should-not-close-the-dialog

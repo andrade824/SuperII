@@ -3,22 +3,29 @@
 
 #include "Cpu.h"
 #include "IMemoryMapped.h"
+#include "IState.h"
 
 #include <QAudioOutput>
 #include <QAudioFormat>
 #include <QIODevice>
 
+#include <fstream>
 #include <queue>
 
-class Speaker : public IMemoryMapped
+class Speaker : public IMemoryMapped, public IState
 {
 public:
     Speaker(Cpu &cpu);
 
+    void Reset();
+
     void PlayAudio(uint32_t num_cycles);
 
-    uint8_t Read(uint16_t addr);
-    void Write(uint16_t addr, uint8_t);
+    uint8_t Read(uint16_t addr) override;
+    void Write(uint16_t addr, uint8_t) override;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
 
     ~Speaker();
 

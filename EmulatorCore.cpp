@@ -7,6 +7,7 @@
 #include "instrs_6502.h"
 
 #include <cstdint>
+#include <fstream>
 
 /**
  * Constructor.
@@ -26,6 +27,28 @@ EmulatorCore::EmulatorCore() :
     _bus.Register(_video);
     _bus.Register(&_keyboard);
     _bus.Register(&_speaker);
+}
+
+/**
+ * Reset the CPU.
+ */
+void EmulatorCore::ResetCpu()
+{
+    _cpu.Reset();
+}
+
+/**
+ * Reset every module to its default state.
+ */
+void EmulatorCore::PowerCycle()
+{
+    _cpu.Reset();
+    _mem.Reset();
+    _video->Reset();
+    _keyboard.Reset();
+    _speaker.Reset();
+
+    _leftover_cycles = 0;
 }
 
 /**
@@ -64,6 +87,76 @@ void EmulatorCore::RunFrame(int FPS)
     _video->repaint();
 
     _speaker.PlayAudio(CYCLES_PER_FRAME - _leftover_cycles);
+}
+
+/**
+ * Save the emulator state out to a file.
+ *
+ * @param output The file to write to.
+ *
+ * @return True if writing was successful.
+ */
+bool EmulatorCore::SaveState(std::ofstream &output)
+{
+    uint32_t temp_magic = STATE_MAGIC;
+    output.write(reinterpret_cast<char*>(&temp_magic), sizeof(temp_magic));
+
+    _cpu.SaveState(output);
+    _mem.SaveState(output);
+    _rom.SaveState(output);
+    _video->SaveState(output);
+    _keyboard.SaveState(output);
+    _speaker.SaveState(output);
+
+    output.write(reinterpret_cast<char*>(&_leftover_cycles),
+                 sizeof(_leftover_cycles));
+
+    return !(!output);
+}
+
+/**
+ * Load the emulator state out of a file.
+ *
+ * @param input The fiel to read from.
+ *
+ * @return  True if reading was successful.
+ */
+bool EmulatorCore::LoadState(std::ifstream &input)
+{
+    uint32_t temp_magic = 0;
+    input.read(reinterpret_cast<char*>(&temp_magic), sizeof(temp_magic));
+
+    if(temp_magic != STATE_MAGIC)
+        return false;
+
+    _cpu.LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    _mem.LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    _rom.LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    _video->LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    _keyboard.LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    _speaker.LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    input.read(reinterpret_cast<char*>(&_leftover_cycles),
+                 sizeof(_leftover_cycles));
+
+    return !(!input);
 }
 
 /**

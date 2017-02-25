@@ -2,10 +2,13 @@
 #define MEMORY_H
 
 #include "IMemoryMapped.h"
+#include "IState.h"
 
 #include <cstdint>
 
-class Memory : public IMemoryMapped
+#include <fstream>
+
+class Memory : public IMemoryMapped, public IState
 {
 public:
     explicit Memory(uint16_t start_addr, uint16_t end_addr, bool write_protect);
@@ -14,11 +17,15 @@ public:
     Memory(const Memory &copy) = delete;
     Memory & operator=(const Memory &rhs) = delete;
 
+    void Reset();
+
     void LoadMemory(const uint8_t *data, uint16_t data_size);
 
     uint8_t Read(uint16_t addr) override;
-
     void Write(uint16_t addr, uint8_t data) override;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
 
 private:
     /**

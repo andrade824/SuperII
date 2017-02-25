@@ -25,6 +25,14 @@ Memory::Memory(uint16_t start_addr, uint16_t end_addr, bool write_protect) :
 }
 
 /**
+ * Reset the memory back to all zeroes.
+ */
+void Memory::Reset()
+{
+    memset(_memory, 0x0, _size);
+}
+
+/**
  * Copy data into this memory device starting at the bottom of memory.
  *
  * @note If the data is larger than the memory, then the data will be
@@ -69,6 +77,27 @@ void Memory::Write(uint16_t addr, uint8_t data)
     if(!_write_protect)
         _memory[addr - _start_addr] = data;
 }
+
+/**
+ * Save the Memory state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void Memory::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(_memory), _size);
+}
+
+/**
+ * Load the Memory state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void Memory::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(_memory), _size);
+}
+
 
 /**
  * Destructor.
