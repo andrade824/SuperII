@@ -35,6 +35,8 @@ private slots:
 
     void on_actionLoad_State_triggered();
 
+    void on_actionSettings_triggered();
+
 private:
     void keyPressEvent(QKeyEvent *event);
 

@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     character_rom.cpp \
     EmulatorCore.cpp \
     Keyboard.cpp \
-    Speaker.cpp
+    Speaker.cpp \
+    SettingsDialog.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -44,7 +45,9 @@ HEADERS += \
     EmulatorCore.h \
     Keyboard.h \
     Speaker.h \
-    IState.h
+    IState.h \
+    SettingsDialog.h
 
 FORMS += \
-    MainWindow.ui
+    MainWindow.ui \
+    SettingsDialog.ui

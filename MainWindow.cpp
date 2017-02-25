@@ -1,5 +1,6 @@
 #include "EmulatorCore.h"
 #include "MainWindow.h"
+#include "SettingsDialog.h"
 #include "ui_MainWindow.h"
 
 #include <QFileDialog>
@@ -213,4 +214,13 @@ void MainWindow::load_state(QString filename)
                                 "file. Ensure this file exists in the current "
                                 "working directory.");
     }
+}
+
+/**
+ * Open up the settings dialog.
+ */
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog *settings = new SettingsDialog(this);
+    settings->open();
 }
