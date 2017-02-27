@@ -62,13 +62,28 @@ void Keyboard::UpdateKeyboardStrobe(const QKeyEvent *key)
 {
     if(_key_map.count(*key) != 0)
     {
-        _data = _key_map[*key];
+        _data = _key_map[*key].code;
     }
 }
 
-void Keyboard::UpdateKeyboardMapping(QKeyEvent, uint8_t)
+/**
+ * Gets the keyboard mappings.
+ *
+ * @return The hash table of keyboard mappings.
+ */
+key_mappings Keyboard::GetMappings() const
 {
+    return _key_map;
+}
 
+/**
+ * Update the keyboard mappings.
+ *
+ * @param key_map The new keyboard mappings.
+ */
+void Keyboard::SetMappings(key_mappings key_map)
+{
+    _key_map = key_map;
 }
 
 /**

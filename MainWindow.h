@@ -47,7 +47,7 @@ private:
     /**
      * The standard timeout for status bar messages.
      */
-    static constexpr int STATUS_TEXT_TIMEOUT = 3000;
+    static constexpr int STATUS_TEXT_TIMEOUT = 5000;
 
     /**
      * Contains all of the UI elements generated in the Qt Forms Designer.

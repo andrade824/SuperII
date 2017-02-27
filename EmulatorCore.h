@@ -9,6 +9,7 @@
 #include "SystemBus.h"
 #include "Video.h"
 
+#include <QColor>
 #include <QKeyEvent>
 
 #include <fstream>
@@ -30,6 +31,15 @@ public:
     void LoadRom(uint8_t data[ROM_SIZE]);
 
     void RunFrame(int FPS);
+
+    QColor GetVideoTextColor() const;
+    void SetVideoTextColor(QColor color);
+
+    bool GetSpeakerMute() const;
+    void SetSpeakerMute(bool mute);
+
+    key_mappings GetMappings();
+    void SetMappings(key_mappings key_map);
 
     bool SaveState(std::ofstream &output);
     bool LoadState(std::ifstream &input);

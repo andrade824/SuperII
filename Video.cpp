@@ -64,6 +64,31 @@ void Video::Reset()
 }
 
 /**
+ * Get the text color.
+ *
+ * @return The color of the text.
+ */
+uint32_t Video::GetTextColor() const
+{
+    return _text_color;
+}
+
+/**
+ * Set the text color.
+ *
+ * @param red The red component.
+ * @param green The green component.
+ * @param blue The blue component.
+ */
+void Video::SetTextColor(int red, int green, int blue)
+{
+    _text_color = (0xFF << 24) |
+                  ((blue & 0xFF) << 16) |
+                  ((green & 0xFF) << 8) |
+                  (red & 0xFF);
+}
+
+/**
  * Toggle a soft-switch through a read operation.
  *
  * @param addr The address to read.
@@ -304,9 +329,8 @@ void Video::render_char(uint8_t char_index, int x, int y)
  */
 void Video::set_text_pixel(bool pixel, bool invert, int x, int y)
 {
-    constexpr uint32_t FG_COLOR = 0xFF60A300;
     constexpr uint32_t BG_COLOR = 0xFF000000;
-    const uint32_t color = (pixel ^ invert) ? FG_COLOR : BG_COLOR;
+    const uint32_t color = (pixel ^ invert) ? _text_color : BG_COLOR;
 
     *(uint32_t *)(_pixels + (y * VIDEO_WIDTH * 4) + (x * 4)) = color;
 }

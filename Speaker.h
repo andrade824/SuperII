@@ -21,6 +21,9 @@ public:
 
     void PlayAudio(uint32_t num_cycles);
 
+    bool GetMute() const;
+    void SetMute(bool mute);
+
     uint8_t Read(uint16_t addr) override;
     void Write(uint16_t addr, uint8_t) override;
 
@@ -80,6 +83,11 @@ private:
      * Samples are written to this I/O device before they get played.
      */
     QIODevice *_audio_io;
+
+    /**
+     * True if the speaker is muted, false otherwise.
+     */
+    bool _muted;
 };
 
 #endif // SPEAKER_H

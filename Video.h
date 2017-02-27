@@ -31,6 +31,9 @@ public:
 
     void Reset();
 
+    uint32_t GetTextColor() const;
+    void SetTextColor(int red, int green, int blue);
+
     uint8_t Read(uint16_t addr) override;
     void Write(uint16_t addr, uint8_t) override;
 
@@ -136,6 +139,11 @@ private:
       * The drawable entity that will display the array of pixels.
       */
      sf::Sprite _sprite;
+
+     /**
+      * Color of the text in 32-bit ABGR format;
+      */
+     uint32_t _text_color = 0xFF60A300;
 };
 
 #endif // VIDEO_H

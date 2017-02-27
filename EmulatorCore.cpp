@@ -90,6 +90,71 @@ void EmulatorCore::RunFrame(int FPS)
 }
 
 /**
+ * Gets the video module's current text color.
+ *
+ * @return The video text color.
+ */
+QColor EmulatorCore::GetVideoTextColor() const
+{
+    uint32_t color = _video->GetTextColor();
+    return QColor::fromRgb(color & 0xFF,
+                           (color >> 8) & 0xFF,
+                           (color >> 16) & 0xFF);
+}
+
+/**
+ * Set the video module's text color.
+ *
+ * @param red The red component.
+ * @param green The green component.
+ * @param blue The blue component.
+ */
+void EmulatorCore::SetVideoTextColor(QColor color)
+{
+    _video->SetTextColor(color.red(), color.green(), color.blue());
+}
+
+/**
+ * Get the speaker mute state.
+ *
+ * @return True if the speaker is muted, false otherwise.
+ */
+bool EmulatorCore::GetSpeakerMute() const
+{
+    return _speaker.GetMute();
+}
+
+/**
+ * Set the speaker mute state.
+ *
+ * @param mute True if the speaker is muted, false otherwise.
+ */
+void EmulatorCore::SetSpeakerMute(bool mute)
+{
+    _speaker.SetMute(mute);
+}
+
+/**
+ * Gets the keyboard mappings.
+ *
+ * @return The hash table of keyboard mappings.
+ */
+key_mappings EmulatorCore::GetMappings()
+{
+    return _keyboard.GetMappings();
+}
+
+/**
+ * Update the keyboard mappings.
+ *
+ * @param key_map The new keyboard mappings.
+ */
+void EmulatorCore::SetMappings(key_mappings key_map)
+{
+    _keyboard.SetMappings(key_map);
+}
+
+/**
  * Save the emulator state out to a file.
  *
  * @param output The file to write to.

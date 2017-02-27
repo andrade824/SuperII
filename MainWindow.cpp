@@ -221,6 +221,6 @@ void MainWindow::load_state(QString filename)
  */
 void MainWindow::on_actionSettings_triggered()
 {
-    SettingsDialog *settings = new SettingsDialog(this);
+    SettingsDialog *settings = new SettingsDialog(_emu, this);
     settings->open();
 }

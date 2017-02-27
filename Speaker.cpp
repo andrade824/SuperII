@@ -33,7 +33,8 @@ Speaker::Speaker(Cpu &cpu) :
     _speaker_state(false),
     _format(),
     _output(nullptr),
-    _audio_io(nullptr)
+    _audio_io(nullptr),
+    _muted(false)
 {
     _format.setSampleRate(SAMPLE_RATE);
     _format.setChannelCount(1);
@@ -89,6 +90,7 @@ void Speaker::PlayAudio(uint32_t num_cycles)
 
 
         samples[i] = (_speaker_state) ? 16000 : 0;
+        samples[i] = (_muted) ? 0 : samples[i];
     }
 
     _audio_io->write(reinterpret_cast<char*>(samples), num_samples * 2);
@@ -96,6 +98,26 @@ void Speaker::PlayAudio(uint32_t num_cycles)
     delete [] samples;
 
     _prev_cycle_count = _cpu.GetTotalCycles();
+}
+
+/**
+ * Get the speaker mute state.
+ *
+ * @return True if the speaker is muted, false otherwise.
+ */
+bool Speaker::GetMute() const
+{
+    return _muted;
+}
+
+/**
+ * Set the speaker mute state.
+ *
+ * @param mute True if the speaker is muted, false otherwise.
+ */
+void Speaker::SetMute(bool mute)
+{
+    _muted = mute;
 }
 
 /**
