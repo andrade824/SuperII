@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>804</width>
-    <height>622</height>
+    <width>806</width>
+    <height>624</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -166,6 +166,12 @@
           </property>
           <item>
            <widget class="QLabel" name="greenLabel">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>Green:</string>
             </property>
