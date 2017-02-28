@@ -56,6 +56,16 @@ void Speaker::Reset()
     _prev_cycle_count = 0;
     _speaker_state = false;
 
+    ClearToggles();
+}
+
+/**
+ * Clears out any pending speaker toggles.
+ *
+ * This differs from Reset() in that it doesn't reset the previous cycle count.
+ */
+void Speaker::ClearToggles()
+{
     while(!_toggle_cycles.empty())
         _toggle_cycles.pop();
 }
@@ -76,26 +86,29 @@ void Speaker::PlayAudio(uint32_t num_cycles)
     const unsigned int num_samples =
             static_cast<unsigned int>(num_cycles / CYCLES_PER_SAMPLE);
 
-    int16_t *samples = new int16_t[num_samples];
-
-    for(unsigned int i = 0; i < num_samples; ++i)
+    if(num_samples > 0)
     {
-        if(!_toggle_cycles.empty()  &&
-           ((i * CYCLES_PER_SAMPLE + _prev_cycle_count) >=
-           _toggle_cycles.front()))
+        int16_t *samples = new int16_t[num_samples];
+
+        for(unsigned int i = 0; i < num_samples; ++i)
         {
-            _toggle_cycles.pop();
-            _speaker_state = !_speaker_state;
+            if(!_toggle_cycles.empty()  &&
+               ((i * CYCLES_PER_SAMPLE + _prev_cycle_count) >=
+               _toggle_cycles.front()))
+            {
+                _toggle_cycles.pop();
+                _speaker_state = !_speaker_state;
+            }
+
+
+            samples[i] = (_speaker_state) ? 16000 : 0;
+            samples[i] = (_muted) ? 0 : samples[i];
         }
 
+        _audio_io->write(reinterpret_cast<char*>(samples), num_samples * 2);
 
-        samples[i] = (_speaker_state) ? 16000 : 0;
-        samples[i] = (_muted) ? 0 : samples[i];
+        delete [] samples;
     }
-
-    _audio_io->write(reinterpret_cast<char*>(samples), num_samples * 2);
-
-    delete [] samples;
 
     _prev_cycle_count = _cpu.GetTotalCycles();
 }
@@ -124,12 +137,14 @@ void Speaker::SetMute(bool mute)
  * Emit a click when the speaker's address is referenced.
  *
  * @param addr The address to read from.
+ * @param no_side_fx True if this read shouldn't cause any side effects
+ *                   (used by the memory view and disassembly).
  *
  * @return Always returns 0.
  */
-uint8_t Speaker::Read(uint16_t addr)
+uint8_t Speaker::Read(uint16_t addr, bool no_side_fx)
 {
-    if(addr == SPEAKER_START_ADDR)
+    if(addr == SPEAKER_START_ADDR && !no_side_fx)
         _toggle_cycles.push(_cpu.GetTotalCycles());
 
     return 0;

@@ -59,7 +59,7 @@ public:
     key_mappings GetMappings() const;
     void SetMappings(key_mappings key_map);
 
-    uint8_t Read(uint16_t addr) override;
+    uint8_t Read(uint16_t addr, bool no_side_fx = false) override;
     void Write(uint16_t addr, uint8_t) override;
 
     void SaveState(std::ofstream &output) override;

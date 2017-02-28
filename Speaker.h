@@ -18,13 +18,14 @@ public:
     Speaker(Cpu &cpu);
 
     void Reset();
+    void ClearToggles();
 
     void PlayAudio(uint32_t num_cycles);
 
     bool GetMute() const;
     void SetMute(bool mute);
 
-    uint8_t Read(uint16_t addr) override;
+    uint8_t Read(uint16_t addr, bool no_side_fx = false) override;
     void Write(uint16_t addr, uint8_t) override;
 
     void SaveState(std::ofstream &output) override;

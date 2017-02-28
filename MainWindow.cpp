@@ -1,3 +1,4 @@
+#include "DisassemblyWindow.h"
 #include "EmulatorCore.h"
 #include "MainWindow.h"
 #include "SettingsDialog.h"
@@ -223,4 +224,21 @@ void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog *settings = new SettingsDialog(_emu, this);
     settings->open();
+}
+
+/**
+ * Opens up the View Memory window.
+ */
+void MainWindow::on_actionView_Memory_triggered()
+{
+
+}
+
+/**
+ * Opens up the disassembly window.
+ */
+void MainWindow::on_actionDisassembly_triggered()
+{
+    DisassemblyWindow *dis = new DisassemblyWindow(_emu, this);
+    dis->show();
 }

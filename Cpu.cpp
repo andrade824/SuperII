@@ -48,7 +48,17 @@ uint32_t Cpu::Execute(uint32_t num_cycles)
     uint32_t starting_cycles = _total_cycles;
 
     while (_total_cycles < (starting_cycles + num_cycles))
+    {
         SingleStep();
+
+        /**
+         * Stop running instructions early if a breakpoint is hit. Any
+         * higher layer will need to read the PC/Breakpoint address and make
+         * sure not to re-run the CPU.
+         */
+        if(_bp_enabled && _context.pc == _bp_addr)
+            return 0;
+    }
 
     return _total_cycles - starting_cycles - num_cycles;
 }
@@ -85,6 +95,57 @@ void Cpu::SingleStep()
 uint32_t Cpu::GetTotalCycles() const
 {
     return _total_cycles;
+}
+
+/**
+ * Getter for the CPU registers.
+ *
+ * @return The CPU context.
+ */
+CpuContext Cpu::GetContext() const
+{
+    return _context;
+}
+
+/**
+ * Breakpoint getter.
+ *
+ * @return The return value is '-1' if there's no breakpoint set, otherwise the
+ *         address the breakpoint is set on.
+ */
+uint16_t Cpu::GetBpAddr() const
+{
+    return _bp_addr;
+}
+
+/**
+ * Sets a breakpoint on address 'addr'.
+ *
+ * @param addr The address to set the breakpoint on.
+ */
+void Cpu::SetBpAddr(uint16_t addr)
+{
+    _bp_addr = addr;
+}
+
+/**
+ * Breakpoint enabled getter.
+ *
+ * @return True if the breakpoint is enabled, false otherwise.
+ */
+bool Cpu::GetBpEnabled() const
+{
+    return _bp_enabled;
+}
+
+/**
+ * Enabled the breakpoint.
+ *
+ * @param enabled True to enable the breakpoint, false to disable it.
+ */
+void Cpu::SetBpEnabled(bool enabled)
+{
+    _bp_enabled = enabled;
 }
 
 /**

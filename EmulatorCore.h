@@ -25,12 +25,24 @@ public:
 public:
     EmulatorCore();
 
+    void SetPaused(bool pause);
+    bool GetPaused() const;
+
     void ResetCpu();
     void PowerCycle();
+
+    CpuContext GetCpuContext() const;
 
     void LoadRom(uint8_t data[ROM_SIZE]);
 
     void RunFrame(int FPS);
+    void SingleStep();
+
+    uint16_t GetBpAddr() const;
+    void SetBpAddr(uint16_t addr);
+
+    bool GetBpEnabled() const;
+    void SetBpEnabled(bool enabled);
 
     QColor GetVideoTextColor() const;
     void SetVideoTextColor(QColor color);
@@ -40,6 +52,8 @@ public:
 
     key_mappings GetMappings();
     void SetMappings(key_mappings key_map);
+
+    void GetMemory(QByteArray &mem, uint16_t start, uint16_t end);
 
     bool SaveState(std::ofstream &output);
     bool LoadState(std::ifstream &input);
@@ -96,6 +110,11 @@ private:
      * subtracted from the next amount of CPU cycles that are run.
      */
     uint32_t _leftover_cycles;
+
+    /**
+     * True if the emulator is paused, false otherwise.
+     */
+    bool _paused;
 };
 
 #endif // EMULATORCORE_H

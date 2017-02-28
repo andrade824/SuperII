@@ -92,14 +92,31 @@ void Video::SetTextColor(int red, int green, int blue)
  * Toggle a soft-switch through a read operation.
  *
  * @param addr The address to read.
+ * @param no_side_fx True if this read shouldn't cause any side effects
+ *                   (used by the memory view and disassembly).
  *
  * @return Always returns zero.
  */
-uint8_t Video::Read(uint16_t addr)
+uint8_t Video::Read(uint16_t addr, bool no_side_fx)
 {
-    toggle_switch(addr);
+    bool ret_val = false;
 
-    return 0;
+    if(!no_side_fx)
+        toggle_switch(addr);
+
+    switch(addr)
+    {
+        case 0xC050:
+        case 0xC051: ret_val = _use_graphics; break;
+        case 0xC052:
+        case 0xC053: ret_val = _use_full_screen; break;
+        case 0xC054:
+        case 0xC055: ret_val = _use_page1; break;
+        case 0xC056:
+        case 0xC057: ret_val = _use_lo_res; break;
+    }
+
+    return (ret_val) ? 1 : 0;
 }
 
 /**

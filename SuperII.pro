@@ -27,7 +27,8 @@ SOURCES += main.cpp \
     EmulatorCore.cpp \
     Keyboard.cpp \
     Speaker.cpp \
-    SettingsDialog.cpp
+    SettingsDialog.cpp \
+    DisassemblyWindow.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -46,8 +47,10 @@ HEADERS += \
     Keyboard.h \
     Speaker.h \
     IState.h \
-    SettingsDialog.h
+    SettingsDialog.h \
+    DisassemblyWindow.h
 
 FORMS += \
     MainWindow.ui \
-    SettingsDialog.ui
+    SettingsDialog.ui \
+    DisassemblyWindow.ui

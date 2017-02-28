@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>804</width>
-    <height>604</height>
+    <width>806</width>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>804</width>
-     <height>27</height>
+     <width>806</width>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -48,6 +48,9 @@
     <property name="title">
      <string>Debug</string>
     </property>
+    <addaction name="actionVIew_CPU_Registers"/>
+    <addaction name="actionDisassembly"/>
+    <addaction name="actionView_Memory"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEmulator"/>
@@ -110,6 +113,21 @@
    </property>
    <property name="shortcut">
     <string>F3</string>
+   </property>
+  </action>
+  <action name="actionDisassembly">
+   <property name="text">
+    <string>Disassembly...</string>
+   </property>
+  </action>
+  <action name="actionVIew_CPU_Registers">
+   <property name="text">
+    <string>CPU Registers...</string>
+   </property>
+  </action>
+  <action name="actionView_Memory">
+   <property name="text">
+    <string>Memory View...</string>
    </property>
   </action>
  </widget>

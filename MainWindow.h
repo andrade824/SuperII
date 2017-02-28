@@ -37,6 +37,10 @@ private slots:
 
     void on_actionSettings_triggered();
 
+    void on_actionView_Memory_triggered();
+
+    void on_actionDisassembly_triggered();
+
 private:
     void keyPressEvent(QKeyEvent *event);
 

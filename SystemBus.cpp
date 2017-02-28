@@ -44,10 +44,12 @@ void SystemBus::Register(IMemoryMapped *device)
  *       from faster than others farther down the list.
  *
  * @param addr The address to read from.
+ * @param no_side_fx True if this read shouldn't cause any side effects
+ *                   (used by the memory view and disassembly).
  *
  * @return Data if a device is registered at 'addr', otherwise 0x00.
  */
-uint8_t SystemBus::Read(uint16_t addr)
+uint8_t SystemBus::Read(uint16_t addr, bool no_side_fx)
 {
     auto found_device = find_if(_devices.begin(),
                                 _devices.end(),
@@ -58,7 +60,7 @@ uint8_t SystemBus::Read(uint16_t addr)
                                 });
 
     if(found_device != _devices.end())
-        return (*found_device)->Read(addr);
+        return (*found_device)->Read(addr, no_side_fx);
     else
         return 0x00;
 }

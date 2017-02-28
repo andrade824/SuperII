@@ -90,17 +90,22 @@ void Keyboard::SetMappings(key_mappings key_map)
  * Read the keyboard data or clear the keyboard strobe.
  *
  * @param addr The address to read.
+ * @param no_side_fx True if this read shouldn't cause any side effects
+ *                   (used by the memory view and disassembly).
  *
  * @return Keyboard data or zero.
  */
-uint8_t Keyboard::Read(uint16_t addr)
+uint8_t Keyboard::Read(uint16_t addr, bool no_side_fx)
 {
     uint8_t ret_val = 0;
 
     switch(addr)
     {
         case 0xC000: ret_val = _data; break;
-        case 0xC010: _data &= 0x7F; break;
+        case 0xC010:
+            if(!no_side_fx)
+                _data &= 0x7F;
+            break;
     }
 
     return ret_val;

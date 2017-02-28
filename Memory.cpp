@@ -55,7 +55,7 @@ void Memory::LoadMemory(const uint8_t *data, uint16_t data_size)
  *
  * @return The data at that address
  */
-uint8_t Memory::Read(uint16_t addr)
+uint8_t Memory::Read(uint16_t addr, bool)
 {
     uint8_t value = 0;
 

@@ -34,7 +34,7 @@ public:
     uint32_t GetTextColor() const;
     void SetTextColor(int red, int green, int blue);
 
-    uint8_t Read(uint16_t addr) override;
+    uint8_t Read(uint16_t addr, bool no_side_fx = false) override;
     void Write(uint16_t addr, uint8_t) override;
 
     void SaveState(std::ofstream &output) override;

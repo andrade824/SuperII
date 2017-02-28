@@ -43,10 +43,12 @@ public:
      * Read an 8-bit value from this device.
      *
      * @param addr The 16-bit address to read from.
+     * @param no_side_fx True if this read shouldn't cause any side effects
+     *                   (used by the memory view and disassembly).
      *
      * @return The value at address 'addr'.
      */
-    virtual uint8_t Read(uint16_t addr) = 0;
+    virtual uint8_t Read(uint16_t addr, bool no_side_fx = false) = 0;
 
     /**
      *  Write an 8-bit value to a location within a 16-bit address space.

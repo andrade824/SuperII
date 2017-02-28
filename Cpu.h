@@ -120,6 +120,14 @@ public:
 
     uint32_t GetTotalCycles() const;
 
+    CpuContext GetContext() const;
+
+    uint16_t GetBpAddr() const;
+    void SetBpAddr(uint16_t addr);
+
+    bool GetBpEnabled() const;
+    void SetBpEnabled(bool enabled);
+
     void SaveState(std::ofstream &output) override;
     void LoadState(std::ifstream &input) override;
 
@@ -142,8 +150,6 @@ private:
     void update_zero(uint16_t result);
     void update_overflow(uint16_t result);
     void update_negative(uint16_t result);
-
-
 
 public:
     bool addr_acc();
@@ -248,6 +254,16 @@ private:
      * Value calculated depending on addressing mode.
      */
     uint8_t _effective_value = 0;
+
+    /**
+     * 16-bit address at which to break on if the PC ever becomes this value.
+     */
+    int _bp_addr = 0;
+
+    /**
+     * True if the breakpoint is enabled, false otherwise.
+     */
+    bool _bp_enabled = false;
 
     /**
      * Execution Context.

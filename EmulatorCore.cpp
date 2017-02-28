@@ -20,13 +20,30 @@ EmulatorCore::EmulatorCore() :
     _video(new Video(_mem)),
     _keyboard(),
     _speaker(_cpu),
-    _leftover_cycles(0)
+    _leftover_cycles(0),
+    _paused(false)
 {
     _bus.Register(&_mem);
     _bus.Register(&_rom);
     _bus.Register(_video);
     _bus.Register(&_keyboard);
     _bus.Register(&_speaker);
+}
+
+/**
+ * Pause the emulator.
+ */
+void EmulatorCore::SetPaused(bool pause)
+{
+    _paused = pause;
+}
+
+/**
+ * Begin running the emulator again (if it was paused).
+ */
+bool EmulatorCore::GetPaused() const
+{
+    return _paused;
 }
 
 /**
@@ -52,6 +69,16 @@ void EmulatorCore::PowerCycle()
 }
 
 /**
+ * Return the CPU Registers.
+ *
+ * @return CPU registers.
+ */
+CpuContext EmulatorCore::GetCpuContext() const
+{
+    return _cpu.GetContext();
+}
+
+/**
  * Load data into ROM.
  *
  * @note The size of the Apple II+ ROM is 12KB.
@@ -74,19 +101,80 @@ void EmulatorCore::LoadRom(uint8_t data[ROM_SIZE])
  */
 void EmulatorCore::RunFrame(int FPS)
 {
-    /**
-     * Calculate how many CPU cycles are to be executed in one frame.
-     *
-     * The standard Apple II CPU frequency is 1.023MHz.
-     */
-    constexpr uint32_t CPU_FREQ = 1023000;
-    const uint32_t CYCLES_PER_FRAME = CPU_FREQ / FPS;
+    if(!_paused)
+    {
+        /**
+         * Calculate how many CPU cycles are to be executed in one frame.
+         *
+         * The standard Apple II CPU frequency is 1.023MHz.
+         */
+        constexpr uint32_t CPU_FREQ = 1023000;
+        const uint32_t CYCLES_PER_FRAME = CPU_FREQ / FPS;
 
-    _leftover_cycles = _cpu.Execute(CYCLES_PER_FRAME - _leftover_cycles);
+        _leftover_cycles = _cpu.Execute(CYCLES_PER_FRAME - _leftover_cycles);
 
-    _video->repaint();
+        if(_cpu.GetBpEnabled() && _cpu.GetContext().pc == _cpu.GetBpAddr())
+            _paused = true;
 
-    _speaker.PlayAudio(CYCLES_PER_FRAME - _leftover_cycles);
+        _video->repaint();
+
+        _speaker.PlayAudio(CYCLES_PER_FRAME - _leftover_cycles);
+    }
+}
+
+/**
+ * Run one CPU instruction
+ */
+void EmulatorCore::SingleStep()
+{
+    if(_paused)
+    {
+        _cpu.SingleStep();
+
+        _video->repaint();
+        _speaker.ClearToggles();
+    }
+}
+
+/**
+ * Breakpoint getter.
+ *
+ * @return The return value is '-1' if there's no breakpoint set, otherwise the
+ *         address the breakpoint is set on.
+ */
+uint16_t EmulatorCore::GetBpAddr() const
+{
+    return _cpu.GetBpAddr();
+}
+
+/**
+ * Sets a breakpoint on address 'addr'.
+ *
+ * @param addr The address to set the breakpoint on.
+ */
+void EmulatorCore::SetBpAddr(uint16_t addr)
+{
+    _cpu.SetBpAddr(addr);
+}
+
+/**
+ * Breakpoint enabled getter.
+ *
+ * @return True if the breakpoint is enabled, false otherwise.
+ */
+bool EmulatorCore::GetBpEnabled() const
+{
+    return _cpu.GetBpEnabled();
+}
+
+/**
+ * Enabled the breakpoint.
+ *
+ * @param enabled True to enable the breakpoint, false to disable it.
+ */
+void EmulatorCore::SetBpEnabled(bool enabled)
+{
+    _cpu.SetBpEnabled(enabled);
 }
 
 /**
@@ -152,6 +240,21 @@ key_mappings EmulatorCore::GetMappings()
 void EmulatorCore::SetMappings(key_mappings key_map)
 {
     _keyboard.SetMappings(key_map);
+}
+
+/**
+ * Retrieve all memory from 'start' to 'end' inclusively with no side effects.
+ *
+ * @param mem The byte array to fill up with memory.
+ * @param start The inclusive start address.
+ * @param end The inclusive end address.
+ */
+void EmulatorCore::GetMemory(QByteArray &mem, uint16_t start, uint16_t end)
+{
+    mem.clear();
+
+    for(int i = start; i <= end; i++)
+        mem.append(_bus.Read(i, true));
 }
 
 /**
