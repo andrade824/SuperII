@@ -4,6 +4,7 @@
 #include "MainWindow.h"
 #include "SettingsDialog.h"
 #include "ui_MainWindow.h"
+#include "ViewMemoryWindow.h"
 
 #include <QFileDialog>
 #include <QKeyEvent>
@@ -250,5 +251,6 @@ void MainWindow::on_actionCPU_Registers_triggered()
  */
 void MainWindow::on_actionView_Memory_triggered()
 {
-
+    ViewMemoryWindow *mem = new ViewMemoryWindow(_emu, this);
+    mem->show();
 }

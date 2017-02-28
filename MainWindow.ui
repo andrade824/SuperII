@@ -127,7 +127,7 @@
   </action>
   <action name="actionView_Memory">
    <property name="text">
-    <string>Memory View...</string>
+    <string>View Memory...</string>
    </property>
   </action>
  </widget>

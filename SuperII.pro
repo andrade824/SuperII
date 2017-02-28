@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     Speaker.cpp \
     SettingsDialog.cpp \
     DisassemblyWindow.cpp \
-    CpuRegistersWindow.cpp
+    CpuRegistersWindow.cpp \
+    ViewMemoryWindow.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -50,10 +51,12 @@ HEADERS += \
     IState.h \
     SettingsDialog.h \
     DisassemblyWindow.h \
-    CpuRegistersWindow.h
+    CpuRegistersWindow.h \
+    ViewMemoryWindow.h
 
 FORMS += \
     MainWindow.ui \
     SettingsDialog.ui \
     DisassemblyWindow.ui \
-    CpuRegistersWindow.ui
+    CpuRegistersWindow.ui \
+    ViewMemoryWindow.ui
