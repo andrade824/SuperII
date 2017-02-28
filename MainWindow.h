@@ -41,6 +41,8 @@ private slots:
 
     void on_actionDisassembly_triggered();
 
+    void on_actionCPU_Registers_triggered();
+
 private:
     void keyPressEvent(QKeyEvent *event);
 

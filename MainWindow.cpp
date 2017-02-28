@@ -1,3 +1,4 @@
+#include "CpuRegistersWindow.h"
 #include "DisassemblyWindow.h"
 #include "EmulatorCore.h"
 #include "MainWindow.h"
@@ -227,18 +228,27 @@ void MainWindow::on_actionSettings_triggered()
 }
 
 /**
- * Opens up the View Memory window.
- */
-void MainWindow::on_actionView_Memory_triggered()
-{
-
-}
-
-/**
  * Opens up the disassembly window.
  */
 void MainWindow::on_actionDisassembly_triggered()
 {
     DisassemblyWindow *dis = new DisassemblyWindow(_emu, this);
     dis->show();
+}
+
+/**
+ * Opens up the CPU Registers window.
+ */
+void MainWindow::on_actionCPU_Registers_triggered()
+{
+    CpuRegistersWindow *reg = new CpuRegistersWindow(_emu, this);
+    reg->show();
+}
+
+/**
+ * Opens up the View Memory window.
+ */
+void MainWindow::on_actionView_Memory_triggered()
+{
+
 }

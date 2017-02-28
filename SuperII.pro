@@ -28,7 +28,8 @@ SOURCES += main.cpp \
     Keyboard.cpp \
     Speaker.cpp \
     SettingsDialog.cpp \
-    DisassemblyWindow.cpp
+    DisassemblyWindow.cpp \
+    CpuRegistersWindow.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -48,9 +49,11 @@ HEADERS += \
     Speaker.h \
     IState.h \
     SettingsDialog.h \
-    DisassemblyWindow.h
+    DisassemblyWindow.h \
+    CpuRegistersWindow.h
 
 FORMS += \
     MainWindow.ui \
     SettingsDialog.ui \
-    DisassemblyWindow.ui
+    DisassemblyWindow.ui \
+    CpuRegistersWindow.ui
