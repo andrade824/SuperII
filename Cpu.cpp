@@ -1038,13 +1038,12 @@ void Cpu::instr_rts()
  */
 void Cpu::instr_sbc()
 {
-    uint16_t result = _context.acc +
-                     (_effective_value ^ 0xFF) +
-                     get_flag(FLAG_CARRY);
+    uint16_t result = _context.acc - _effective_value - !get_flag(FLAG_CARRY);
 
-    update_carry(result);
+    set_flag(FLAG_CARRY, result < 0x100);
+    set_flag(FLAG_OVERFLOW, ((_context.acc ^ result) & 0x80) &&
+                            ((_context.acc ^ _effective_value) & 0x80));
     update_zero(result);
-    update_overflow(result);
     update_negative(result);
 
     /**
