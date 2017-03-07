@@ -30,7 +30,8 @@ SOURCES += main.cpp \
     SettingsDialog.cpp \
     DisassemblyWindow.cpp \
     CpuRegistersWindow.cpp \
-    ViewMemoryWindow.cpp
+    ViewMemoryWindow.cpp \
+    DiskImage.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -52,7 +53,8 @@ HEADERS += \
     SettingsDialog.h \
     DisassemblyWindow.h \
     CpuRegistersWindow.h \
-    ViewMemoryWindow.h
+    ViewMemoryWindow.h \
+    DiskImage.h
 
 FORMS += \
     MainWindow.ui \
