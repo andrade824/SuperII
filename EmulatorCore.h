@@ -2,6 +2,7 @@
 #define EMULATORCORE_H
 
 #include "Cpu.h"
+#include "DiskRom.h"
 #include "IState.h"
 #include "Keyboard.h"
 #include "Memory.h"
@@ -104,6 +105,11 @@ private:
      * Speaker module.
      */
     Speaker _speaker;
+
+    /**
+     * ROM inside the Disk II controller card.
+     */
+    DiskRom _disk_rom;
 
     /**
      * The number of extra cycles ran after each CPU execution. These will be

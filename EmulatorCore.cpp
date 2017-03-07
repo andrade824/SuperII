@@ -20,6 +20,7 @@ EmulatorCore::EmulatorCore() :
     _video(new Video(_mem)),
     _keyboard(),
     _speaker(_cpu),
+    _disk_rom(),
     _leftover_cycles(0),
     _paused(false)
 {
@@ -28,6 +29,7 @@ EmulatorCore::EmulatorCore() :
     _bus.Register(_video);
     _bus.Register(&_keyboard);
     _bus.Register(&_speaker);
+    _bus.Register(&_disk_rom);
 }
 
 /**
