@@ -71,20 +71,15 @@ void Cpu::SingleStep()
     bool crossed_page_boundary = false;
     _cur_opcode = _bus.Read(_context.pc++);
 
-    /**
-     * Run the instruction.
-     */
+    _total_cycles += _opcodes[_cur_opcode].cycles;
+
     crossed_page_boundary = CALL_MEMBER_FN(_opcodes[_cur_opcode].addr_mode)();
+    if(crossed_page_boundary && _opcodes[_cur_opcode].has_page_penalty)
+        _total_cycles++;
+
     CALL_MEMBER_FN(_opcodes[_cur_opcode].instr)();
 
     _num_instr++;
-
-    /**
-     * Calculate cycles used.
-     */
-    _total_cycles += _opcodes[_cur_opcode].cycles;
-    if(crossed_page_boundary && _opcodes[_cur_opcode].has_page_penalty)
-        _total_cycles++;
 }
 
 /**

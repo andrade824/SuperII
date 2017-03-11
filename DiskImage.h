@@ -23,6 +23,11 @@ public:
     static constexpr int SECTOR_SIZE = 256;
 
     /**
+     * Size of each track in bytes.
+     */
+    static constexpr int TRACK_SIZE = NUM_SECTORS * SECTOR_SIZE;
+
+    /**
      * Size of a disk image in bytes (this only includes the data fields).
      */
     static constexpr int DISK_SIZE = NUM_TRACKS * NUM_SECTORS * SECTOR_SIZE;

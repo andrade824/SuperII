@@ -16,6 +16,8 @@
  */
 #include "DiskImage.h"
 
+#include <iostream>
+
 /**
  * Constructor.
  */
@@ -34,7 +36,15 @@ DiskImage::DiskImage() :
 void DiskImage::LoadDisk(uint8_t disk[DISK_SIZE])
 {
     for(int i = 0; i < NUM_TRACKS; ++i)
+    {
         encode_track(i, disk + (i * NUM_SECTORS * SECTOR_SIZE));
+
+        if(_tracks[i].size() != TRACK_SIZE)
+        {
+            std::cout << "Incorrect track size. Something's wrong :("
+                      << std:: endl;
+        }
+    }
 
     _disk_loaded = true;
 }
