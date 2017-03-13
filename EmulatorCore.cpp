@@ -20,7 +20,7 @@ EmulatorCore::EmulatorCore() :
     _video(new Video(_mem)),
     _keyboard(),
     _speaker(_cpu),
-    _disk_rom(),
+    _disk_ctrl(_cpu),
     _leftover_cycles(0),
     _paused(false)
 {
@@ -29,7 +29,10 @@ EmulatorCore::EmulatorCore() :
     _bus.Register(_video);
     _bus.Register(&_keyboard);
     _bus.Register(&_speaker);
-    _bus.Register(&_disk_rom);
+    _bus.Register(&_disk_ctrl);
+    _bus.Register(&_disk_ctrl,
+                  DiskController::DISK_ROM_START,
+                  DiskController::DISK_ROM_END);
 }
 
 /**
@@ -91,6 +94,18 @@ void EmulatorCore::LoadRom(uint8_t data[ROM_SIZE])
 {
     _rom.LoadMemory(data, ROM_SIZE);
     _cpu.Reset();
+}
+
+/**
+ * Load a disk image into memory.
+ *
+ * @param drive The disk drive to "insert" the image into.
+ * @param data The disk image data.
+ */
+void EmulatorCore::LoadDisk(DiskController::DriveId drive,
+                            uint8_t data[DiskDrive::DISK_SIZE])
+{
+    _disk_ctrl.LoadDisk(drive, data);
 }
 
 /**

@@ -156,8 +156,6 @@ void Cpu::SaveState(std::ofstream &output)
                  sizeof(_total_cycles));
     output.write(reinterpret_cast<char*>(&_effective_addr),
                  sizeof(_effective_addr));
-    output.write(reinterpret_cast<char*>(&_effective_value),
-                 sizeof(_effective_value));
     output.write(reinterpret_cast<char*>(&_context), sizeof(_context));
 }
 
@@ -174,8 +172,6 @@ void Cpu::LoadState(std::ifstream &input)
                  sizeof(_total_cycles));
     input.read(reinterpret_cast<char*>(&_effective_addr),
                  sizeof(_effective_addr));
-    input.read(reinterpret_cast<char*>(&_effective_value),
-                 sizeof(_effective_value));
     input.read(reinterpret_cast<char*>(&_context), sizeof(_context));
 }
 
@@ -220,7 +216,7 @@ void Cpu::save_result(uint16_t result)
 void Cpu::do_branch(CpuFlag flag, uint8_t value)
 {
     uint16_t old_pc = _context.pc;
-    uint16_t rel = _effective_value;
+    uint16_t rel = _bus.Read(_effective_addr);
 
     /**
      * Sign extend the 8-bit number.
@@ -303,9 +299,9 @@ void Cpu::update_zero(uint16_t result)
         set_flag(FLAG_ZERO, 1);
 }
 
-void Cpu::update_overflow(uint16_t result)
+void Cpu::update_overflow(uint16_t result, uint8_t effective_value)
 {
-    if((result ^ _context.acc) & (result ^ _effective_value) & 0x80)
+    if((result ^ _context.acc) & (result ^ effective_value) & 0x80)
         set_flag(FLAG_OVERFLOW, 1);
     else
         set_flag(FLAG_OVERFLOW, 0);
@@ -329,7 +325,6 @@ void Cpu::update_negative(uint16_t result)
 bool Cpu::addr_acc()
 {
     _effective_addr = 0;
-    _effective_value = _context.acc;
 
     return false;
 }
@@ -340,7 +335,6 @@ bool Cpu::addr_acc()
 bool Cpu::addr_abs()
 {
     _effective_addr = bus_read16(_context.pc);
-    _effective_value = _bus.Read(_effective_addr);
 
     _context.pc += 2;
     return false;
@@ -358,8 +352,6 @@ bool Cpu::addr_abs_x()
     _effective_addr = bus_read16(_context.pc);
     start_page = _effective_addr & 0xFF00;
     _effective_addr += _context.x;
-
-    _effective_value = _bus.Read(_effective_addr);
 
     _context.pc += 2;
 
@@ -379,8 +371,6 @@ bool Cpu::addr_abs_y()
     start_page = _effective_addr & 0xFF00;
     _effective_addr += _context.y;
 
-    _effective_value = _bus.Read(_effective_addr);
-
     _context.pc += 2;
 
     return (start_page != (_effective_addr & 0xFF00));
@@ -393,8 +383,7 @@ bool Cpu::addr_abs_y()
  */
 bool Cpu::addr_imm()
 {
-    _effective_addr = 0;
-    _effective_value = _bus.Read(_context.pc++);
+    _effective_addr = _context.pc++;
 
     return false;
 }
@@ -407,7 +396,6 @@ bool Cpu::addr_imm()
 bool Cpu::addr_imp()
 {
     _effective_addr = 0;
-    _effective_value = 0;
 
     return false;
 }
@@ -437,8 +425,6 @@ bool Cpu::addr_ind()
     ea_upper = (ea_lower & 0xFF00) | ((ea_lower + 1) & 0x00FF);
     _effective_addr = _bus.Read(ea_lower) | (_bus.Read(ea_upper) << 8);
 
-    _effective_value = _bus.Read(_effective_addr);
-
     _context.pc += 2;
 
     return false;
@@ -454,8 +440,6 @@ bool Cpu::addr_x_ind()
     _effective_addr = (_bus.Read(_context.pc++) + _context.x) & 0xFF;
     _effective_addr = _bus.Read(_effective_addr) |
                       (_bus.Read((_effective_addr + 1) & 0xFF) << 8);
-
-    _effective_value = _bus.Read(_effective_addr);
 
     return false;
 }
@@ -477,8 +461,6 @@ bool Cpu::addr_ind_y()
 
     _effective_addr += _context.y;
 
-    _effective_value = _bus.Read(_effective_addr);
-
     return (start_page != (_effective_addr & 0xFF00));
 }
 
@@ -489,9 +471,7 @@ bool Cpu::addr_ind_y()
  */
 bool Cpu::addr_rel()
 {
-    _effective_value = _bus.Read(_context.pc++);
-
-    _effective_addr = 0;
+    _effective_addr = _context.pc++;
 
     return false;
 }
@@ -504,7 +484,6 @@ bool Cpu::addr_rel()
 bool Cpu::addr_zpg()
 {
     _effective_addr = _bus.Read(_context.pc++);
-    _effective_value = _bus.Read(_effective_addr);
 
     return false;
 }
@@ -517,7 +496,6 @@ bool Cpu::addr_zpg()
 bool Cpu::addr_zpg_x()
 {
     _effective_addr = (_bus.Read(_context.pc++) + _context.x) & 0xFF;
-    _effective_value = _bus.Read(_effective_addr);
 
     return false;
 }
@@ -530,7 +508,6 @@ bool Cpu::addr_zpg_x()
 bool Cpu::addr_zpg_y()
 {
     _effective_addr = (_bus.Read(_context.pc++) + _context.y) & 0xFF;
-    _effective_value = _bus.Read(_effective_addr);
 
     return false;
 }
@@ -544,11 +521,12 @@ bool Cpu::addr_zpg_y()
  */
 void Cpu::instr_adc()
 {
-    uint16_t result = _context.acc + _effective_value + get_flag(FLAG_CARRY);
+    uint8_t value = _bus.Read(_effective_addr);
+    uint16_t result = _context.acc + value + get_flag(FLAG_CARRY);
 
     update_carry(result);
     update_zero(result);
-    update_overflow(result);
+    update_overflow(result, value);
     update_negative(result);
 
     /**
@@ -579,7 +557,7 @@ void Cpu::instr_adc()
  */
 void Cpu::instr_and()
 {
-    uint16_t result = _context.acc & _effective_value;
+    uint16_t result = _context.acc & _bus.Read(_effective_addr);
 
     update_zero(result);
     update_negative(result);
@@ -592,7 +570,11 @@ void Cpu::instr_and()
  */
 void Cpu::instr_asl()
 {
-    uint16_t result = _effective_value << 1;
+    uint16_t result = 0;
+    if(_opcodes[_cur_opcode].addr_mode == &Cpu::addr_acc)
+        result = _context.acc << 1;
+    else
+        result = _bus.Read(_effective_addr) << 1;
 
     update_carry(result);
     update_zero(result);
@@ -630,11 +612,12 @@ void Cpu::instr_beq()
  */
 void Cpu::instr_bit()
 {
-    uint16_t result = _context.acc & _effective_value;
+    uint8_t value = _bus.Read(_effective_addr);
+    uint16_t result = _context.acc & value;
 
     update_zero(result);
-    set_flag(FLAG_OVERFLOW, (_effective_value & FLAG_OVERFLOW));
-    set_flag(FLAG_NEGATIVE, (_effective_value & FLAG_NEGATIVE));
+    set_flag(FLAG_OVERFLOW, (value & FLAG_OVERFLOW));
+    set_flag(FLAG_NEGATIVE, (value & FLAG_NEGATIVE));
 }
 
 /**
@@ -729,14 +712,15 @@ void Cpu::instr_clv()
  */
 void Cpu::instr_cmp()
 {
-    update_negative(_context.acc - _effective_value);
+    uint8_t value = _bus.Read(_effective_addr);
+    update_negative(_context.acc - value);
 
-    if(_context.acc >= _effective_value)
+    if(_context.acc >= value)
         set_flag(FLAG_CARRY, 1);
     else
         set_flag(FLAG_CARRY, 0);
 
-    if(_context.acc == _effective_value)
+    if(_context.acc == value)
         set_flag(FLAG_ZERO, 1);
     else
         set_flag(FLAG_ZERO, 0);
@@ -747,14 +731,15 @@ void Cpu::instr_cmp()
  */
 void Cpu::instr_cpx()
 {
-    update_negative(_context.x - _effective_value);
+    uint8_t value = _bus.Read(_effective_addr);
+    update_negative(_context.x - value);
 
-    if(_context.x >= _effective_value)
+    if(_context.x >= value)
         set_flag(FLAG_CARRY, 1);
     else
         set_flag(FLAG_CARRY, 0);
 
-    if(_context.x == _effective_value)
+    if(_context.x == value)
         set_flag(FLAG_ZERO, 1);
     else
         set_flag(FLAG_ZERO, 0);
@@ -765,14 +750,15 @@ void Cpu::instr_cpx()
  */
 void Cpu::instr_cpy()
 {
-    update_negative(_context.y - _effective_value);
+    uint8_t value = _bus.Read(_effective_addr);
+    update_negative(_context.y - value);
 
-    if(_context.y >= _effective_value)
+    if(_context.y >= value)
         set_flag(FLAG_CARRY, 1);
     else
         set_flag(FLAG_CARRY, 0);
 
-    if(_context.y == _effective_value)
+    if(_context.y == value)
         set_flag(FLAG_ZERO, 1);
     else
         set_flag(FLAG_ZERO, 0);
@@ -783,7 +769,7 @@ void Cpu::instr_cpy()
  */
 void Cpu::instr_dec()
 {
-    uint16_t result = _effective_value - 1;
+    uint16_t result = _bus.Read(_effective_addr) - 1;
 
     update_zero(result);
     update_negative(result);
@@ -818,7 +804,7 @@ void Cpu::instr_dey()
  */
 void Cpu::instr_eor()
 {
-    uint16_t result = _context.acc ^ _effective_value;
+    uint16_t result = _context.acc ^ _bus.Read(_effective_addr);
 
     update_zero(result);
     update_negative(result);
@@ -831,7 +817,7 @@ void Cpu::instr_eor()
  */
 void Cpu::instr_inc()
 {
-    uint16_t result = _effective_value + 1;
+    uint16_t result = _bus.Read(_effective_addr) + 1;
 
     update_zero(result);
     update_negative(result);
@@ -883,7 +869,7 @@ void Cpu::instr_jsr()
  */
 void Cpu::instr_lda()
 {
-    _context.acc = _effective_value;
+    _context.acc = _bus.Read(_effective_addr);
 
     update_zero(_context.acc);
     update_negative(_context.acc);
@@ -894,7 +880,7 @@ void Cpu::instr_lda()
  */
 void Cpu::instr_ldx()
 {
-    _context.x = _effective_value;
+    _context.x = _bus.Read(_effective_addr);
 
     update_zero(_context.x);
     update_negative(_context.x);
@@ -905,7 +891,7 @@ void Cpu::instr_ldx()
  */
 void Cpu::instr_ldy()
 {
-    _context.y = _effective_value;
+    _context.y = _bus.Read(_effective_addr);
 
     update_zero(_context.y);
     update_negative(_context.y);
@@ -916,9 +902,15 @@ void Cpu::instr_ldy()
  */
 void Cpu::instr_lsr()
 {
-    uint16_t result = _effective_value >> 1;
+    uint16_t value = 0;
+    if(_opcodes[_cur_opcode].addr_mode == &Cpu::addr_acc)
+        value = _context.acc;
+    else
+        value = _bus.Read(_effective_addr);
 
-    set_flag(FLAG_CARRY, _effective_value & 1);
+    uint16_t result = value >> 1;
+
+    set_flag(FLAG_CARRY, value & 1);
     update_zero(result);
     update_negative(result);
 
@@ -940,7 +932,7 @@ void Cpu::instr_nop()
  */
 void Cpu::instr_ora()
 {
-    uint16_t result = _context.acc | _effective_value;
+    uint16_t result = _context.acc | _bus.Read(_effective_addr);
 
     update_zero(result);
     update_negative(result);
@@ -988,7 +980,13 @@ void Cpu::instr_plp()
  */
 void Cpu::instr_rol()
 {
-    uint16_t result = (_effective_value << 1) | get_flag(FLAG_CARRY);
+    uint16_t value = 0;
+    if(_opcodes[_cur_opcode].addr_mode == &Cpu::addr_acc)
+        value = _context.acc;
+    else
+        value = _bus.Read(_effective_addr);
+
+    uint16_t result = (value << 1) | get_flag(FLAG_CARRY);
 
     update_carry(result);
     update_zero(result);
@@ -1002,9 +1000,15 @@ void Cpu::instr_rol()
  */
 void Cpu::instr_ror()
 {
-    uint16_t result = (_effective_value >> 1) | (get_flag(FLAG_CARRY) << 7);
+    uint16_t value = 0;
+    if(_opcodes[_cur_opcode].addr_mode == &Cpu::addr_acc)
+        value = _context.acc;
+    else
+        value = _bus.Read(_effective_addr);
 
-    set_flag(FLAG_CARRY, _effective_value & 1);
+    uint16_t result = (value >> 1) | (get_flag(FLAG_CARRY) << 7);
+
+    set_flag(FLAG_CARRY, value & 1);
     update_zero(result);
     update_negative(result);
 
@@ -1033,11 +1037,12 @@ void Cpu::instr_rts()
  */
 void Cpu::instr_sbc()
 {
-    uint16_t result = _context.acc - _effective_value - !get_flag(FLAG_CARRY);
+    int value = _bus.Read(_effective_addr);
+    uint16_t result = _context.acc - value - !get_flag(FLAG_CARRY);
 
     set_flag(FLAG_CARRY, result < 0x100);
     set_flag(FLAG_OVERFLOW, ((_context.acc ^ result) & 0x80) &&
-                            ((_context.acc ^ _effective_value) & 0x80));
+                            ((_context.acc ^ value) & 0x80));
     update_zero(result);
     update_negative(result);
 

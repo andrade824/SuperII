@@ -27,12 +27,33 @@ SystemBus::SystemBus() : _devices()
  *
  * @note It's up to the user to ensure that memory regions don't overlap.
  *
- * @param region The memory region to add to the search list when a read/write
+ * @param device The memory region to add to the search list when a read/write
  *               occurs.
  */
 void SystemBus::Register(IMemoryMapped *device)
 {
-    _devices.push_back(device);
+    _devices.push_back({ device,
+                         device->GetStartAddr(),
+                         device->GetEndAddr() });
+}
+
+/**
+ * Register a device within the address space.
+ *
+ * @note When a read/write is requested on the bus, the devices will be searched
+ *       in the order they were registered. For best performance, register
+ *       devices that will be accessed more often before other regions.
+ *
+ * @note It's up to the user to ensure that memory regions don't overlap.
+ *
+ * @param device The device to perform read/writes on if a requested address is
+ *               within 'start' and 'end'
+ * @param start Inclusive start address of the device within the address space.
+ * @param end Inclusive end address of the device within the address space.
+ */
+void SystemBus::Register(IMemoryMapped *device, uint16_t start, uint16_t end)
+{
+    _devices.push_back({ device, start, end });
 }
 
 /**
@@ -53,14 +74,14 @@ uint8_t SystemBus::Read(uint16_t addr, bool no_side_fx)
 {
     auto found_device = find_if(_devices.begin(),
                                 _devices.end(),
-                                [&] (const IMemoryMapped *device)
+                                [&] (const IoDevice &device)
                                 {
-                                    return (addr >= device->GetStartAddr()) &&
-                                           (addr <= device->GetEndAddr());
+                                    return (addr >= device.start) &&
+                                           (addr <= device.end);
                                 });
 
     if(found_device != _devices.end())
-        return (*found_device)->Read(addr, no_side_fx);
+        return (*found_device).device->Read(addr, no_side_fx);
     else
         return 0x00;
 }
@@ -79,12 +100,12 @@ void SystemBus::Write(uint16_t addr, uint8_t data)
 {
     auto found_device = find_if(_devices.begin(),
                                 _devices.end(),
-                                [&] (const IMemoryMapped *device)
+                                [&] (const IoDevice &device)
                                 {
-                                    return (addr >= device->GetStartAddr()) &&
-                                           (addr <= device->GetEndAddr());
+                                    return (addr >= device.start) &&
+                                           (addr <= device.end);
                                 });
 
     if(found_device != _devices.end())
-        (*found_device)->Write(addr, data);
+        (*found_device).device->Write(addr, data);
 }

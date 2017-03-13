@@ -14,17 +14,18 @@
  * to include this data.
  *
  */
-#include "DiskImage.h"
+#include "DiskDrive.h"
 
 #include <iostream>
 
 /**
  * Constructor.
  */
-DiskImage::DiskImage() :
+DiskDrive::DiskDrive() :
     _tracks(),
     _disk_loaded(false),
-    _write_protected(true)
+    _write_protected(false),
+    _cur_bit(0)
 { }
 
 /**
@@ -33,20 +34,86 @@ DiskImage::DiskImage() :
  *
  * @param disk The raw non-encoded disk image (probably downloaded online).
  */
-void DiskImage::LoadDisk(uint8_t disk[DISK_SIZE])
+void DiskDrive::LoadDisk(uint8_t disk[DISK_SIZE])
 {
     for(int i = 0; i < NUM_TRACKS; ++i)
-    {
         encode_track(i, disk + (i * NUM_SECTORS * SECTOR_SIZE));
 
-        if(_tracks[i].size() != TRACK_SIZE)
-        {
-            std::cout << "Incorrect track size. Something's wrong :("
-                      << std:: endl;
-        }
+    _disk_loaded = true;
+}
+
+/**
+ * Move the drive one bit position forward.
+ *
+ * @param track_num The track to seek on.
+ */
+void DiskDrive::SeekBit(uint8_t track_num)
+{
+    if(_disk_loaded && track_num < NUM_TRACKS)
+        _cur_bit = (_cur_bit + 1) % (_tracks[track_num].size() * 8);
+}
+
+/**
+ * Seeks back to the beginning of the current byte. This is used to synchronize
+ * any writes to the beginning of a byte. A real disk controller uses
+ * "self-sync" bytes to keep this synchronization.
+ *
+ * @param track_num The track to seek on.
+ */
+void DiskDrive::SeekPrevByte(uint8_t track_num)
+{
+    if(_disk_loaded && track_num < NUM_TRACKS)
+        _cur_bit = (_cur_bit / 8) * 8;
+}
+
+/**
+ * Set a bit on the currently loaded disk.
+ *
+ * @param track_num The track to write to.
+ * @param data The data to write (only the LSB is written).
+ */
+void DiskDrive::SetBit(uint8_t track_num, uint8_t data)
+{
+    if(_disk_loaded && track_num < NUM_TRACKS)
+    {
+        int byte_index = _cur_bit / 8;
+        int bit_index = 7 - (_cur_bit % 8);
+
+        _tracks[track_num][byte_index] &= ~(1 << bit_index);
+        _tracks[track_num][byte_index] |= (data & 1) << bit_index;
+    }
+}
+
+/**
+ * Retrieve a bit on the currently loaded disk.
+ *
+ * @param track_num The track to read from.
+ *
+ * @return The data.
+ */
+uint8_t DiskDrive::GetBit(uint8_t track_num)
+{
+    uint8_t ret_val = 0;
+
+    if(_disk_loaded && track_num < NUM_TRACKS)
+    {
+        int byte_index = _cur_bit / 8;
+        int bit_index = 7 - (_cur_bit % 8);
+
+        ret_val = (_tracks[track_num][byte_index] >> bit_index) & 1;
     }
 
-    _disk_loaded = true;
+    return ret_val;
+}
+
+/**
+ * Write protect switch getter.
+ *
+ * @return True if write protected, false otherwise.
+ */
+bool DiskDrive::GetWriteProtect() const
+{
+    return _write_protected;
 }
 
 /**
@@ -55,15 +122,15 @@ void DiskImage::LoadDisk(uint8_t disk[DISK_SIZE])
  * @param track_num The track to encode.
  * @param data A pointer to the data where the track begins.
  */
-void DiskImage::encode_track(uint8_t track_num, uint8_t *data)
+void DiskDrive::encode_track(uint8_t track_num, uint8_t *data)
 {
     /**
      * Sector interleaving table. By not having all of the sectors located next
      * to each other in ascending order, it gives DOS more time to process a
      * sector before having to read the next one.
      */
-    constexpr uint8_t sector_trans[16] = { 0, 7, 14, 6, 13, 5, 12, 4,
-                                           11, 3, 10, 2, 9, 1, 8, 15 };
+    constexpr uint8_t sector_trans[16] = { 0, 13, 11, 9, 7, 5, 3, 1,
+                                           14, 12, 10, 8, 6, 4, 2, 15 };
 
     for(int i = 0; i < NUM_SECTORS; ++i)
         encode_sector(track_num, sector_trans[i], data + (i * SECTOR_SIZE));
@@ -81,7 +148,7 @@ void DiskImage::encode_track(uint8_t track_num, uint8_t *data)
  * @param sector_num Which sector this is.
  * @param data A pointer to the data where the track begins.
  */
-void DiskImage::encode_sector(uint8_t track_num,
+void DiskDrive::encode_sector(uint8_t track_num,
                               uint8_t sector_num,
                               uint8_t *data)
 {
@@ -122,7 +189,7 @@ void DiskImage::encode_sector(uint8_t track_num,
     /**
      * Gap 2 appears between the address and data fields for 5 bytes.
      */
-    encode_gap(track_num, 5);
+    encode_gap(track_num, 6);
 
     /**
      * Encode the data field.
@@ -194,7 +261,7 @@ void DiskImage::encode_sector(uint8_t track_num,
  * @param track_num The track number to add the gap bytes to.
  * @param num_bytes Number of gap bytes to encode.
  */
-void DiskImage::encode_gap(uint8_t track_num, int num_bytes)
+void DiskDrive::encode_gap(uint8_t track_num, int num_bytes)
 {
     for(int i = 0; i < num_bytes; ++i)
         _tracks[track_num].push_back(0xFF);
@@ -212,12 +279,12 @@ void DiskImage::encode_gap(uint8_t track_num, int num_bytes)
  * 1 D6 1 D4 1 D2 1 D0
  *
  * This ensures that every byte starts with a '1' and that there's no
- * adjacent zeroes (which is a requirement of the original disk controller.
+ * adjacent zeroes (which is a requirement of the original disk controller).
  *
  * @param track_num The track to append the encoded data to.
  * @param data The byte to encode.
  */
-void DiskImage::encode_44(uint8_t track_num, uint8_t data)
+void DiskDrive::encode_44(uint8_t track_num, uint8_t data)
 {
     _tracks[track_num].push_back((data >> 1) | 0xAA);
     _tracks[track_num].push_back(data | 0xAA);

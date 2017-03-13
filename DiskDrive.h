@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-class DiskImage
+class DiskDrive
 {
 public:
     /**
@@ -23,11 +23,6 @@ public:
     static constexpr int SECTOR_SIZE = 256;
 
     /**
-     * Size of each track in bytes.
-     */
-    static constexpr int TRACK_SIZE = NUM_SECTORS * SECTOR_SIZE;
-
-    /**
      * Size of a disk image in bytes (this only includes the data fields).
      */
     static constexpr int DISK_SIZE = NUM_TRACKS * NUM_SECTORS * SECTOR_SIZE;
@@ -38,9 +33,17 @@ public:
     static constexpr uint8_t DEFAULT_VOLUME = 254;
 
 public:
-    DiskImage();
+    DiskDrive();
 
     void LoadDisk(uint8_t disk[DISK_SIZE]);
+
+    void SeekBit(uint8_t track_num);
+    void SeekPrevByte(uint8_t track_num);
+
+    void SetBit(uint8_t track_num, uint8_t data);
+    uint8_t GetBit(uint8_t track_num);
+
+    bool GetWriteProtect() const;
 
 private:
     void encode_track(uint8_t track_num, uint8_t *data);
@@ -63,6 +66,12 @@ private:
      * True if the disk is write protected, otherwise false.
      */
     bool _write_protected;
+
+    /**
+     * The bit to read/write. This is the current position of the disk in its
+     * rotation.
+     */
+    uint32_t _cur_bit;
 };
 
 #endif // DISKIMAGE_H

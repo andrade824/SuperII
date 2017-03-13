@@ -2,7 +2,7 @@
 #define EMULATORCORE_H
 
 #include "Cpu.h"
-#include "DiskRom.h"
+#include "DiskController.h"
 #include "IState.h"
 #include "Keyboard.h"
 #include "Memory.h"
@@ -35,6 +35,8 @@ public:
     CpuContext GetCpuContext() const;
 
     void LoadRom(uint8_t data[ROM_SIZE]);
+    void LoadDisk(DiskController::DriveId drive,
+                  uint8_t data[DiskDrive::DISK_SIZE]);
 
     void RunFrame(int FPS);
     void SingleStep();
@@ -107,9 +109,9 @@ private:
     Speaker _speaker;
 
     /**
-     * ROM inside the Disk II controller card.
+     * Disk II controller card.
      */
-    DiskRom _disk_rom;
+    DiskController _disk_ctrl;
 
     /**
      * The number of extra cycles ran after each CPU execution. These will be

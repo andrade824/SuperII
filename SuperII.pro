@@ -31,9 +31,8 @@ SOURCES += main.cpp \
     DisassemblyWindow.cpp \
     CpuRegistersWindow.cpp \
     ViewMemoryWindow.cpp \
-    DiskImage.cpp \
-    DiskRom.cpp \
-    DiskController.cpp
+    DiskController.cpp \
+    DiskDrive.cpp
 
 OTHER_FILES += \
     TODO.txt \
@@ -56,9 +55,8 @@ HEADERS += \
     DisassemblyWindow.h \
     CpuRegistersWindow.h \
     ViewMemoryWindow.h \
-    DiskImage.h \
-    DiskRom.h \
-    DiskController.h
+    DiskController.h \
+    DiskDrive.h
 
 FORMS += \
     MainWindow.ui \
