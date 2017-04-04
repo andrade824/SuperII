@@ -36,10 +36,25 @@ DiskDrive::DiskDrive() :
  */
 void DiskDrive::LoadDisk(uint8_t disk[DISK_SIZE])
 {
+    if(_disk_loaded)
+        UnloadDisk();
+
     for(int i = 0; i < NUM_TRACKS; ++i)
         encode_track(i, disk + (i * NUM_SECTORS * SECTOR_SIZE));
 
     _disk_loaded = true;
+}
+
+/**
+ * Unload a disk from the drive.
+ */
+void DiskDrive::UnloadDisk()
+{
+    for(int i = 0; i < NUM_TRACKS; ++i)
+        _tracks[i].clear();
+
+    _cur_bit = 0;
+    _disk_loaded = false;
 }
 
 /**

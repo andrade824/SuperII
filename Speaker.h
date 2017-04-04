@@ -86,6 +86,13 @@ private:
     QIODevice *_audio_io;
 
     /**
+     * If the application doesn't toggle the speaker within a certain number of
+     * frames, then the application is muted. This is used to prevent some
+     * strange audio glitches.
+     */
+    int _mute_counter;
+
+    /**
      * True if the speaker is muted, false otherwise.
      */
     bool _muted;

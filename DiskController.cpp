@@ -94,6 +94,25 @@ void DiskController::LoadDisk(DriveId drive, uint8_t data[DiskDrive::DISK_SIZE])
 }
 
 /**
+ * Unload a disk from the disk controller.
+ *
+ * @param drive Which drive to unload the disk from.
+ */
+void DiskController::UnloadDisk(DiskController::DriveId drive)
+{
+    switch(drive)
+    {
+    case DRIVE_0:
+        _drive0.UnloadDisk();
+        break;
+
+    case DRIVE_1:
+        _drive1.UnloadDisk();
+        break;
+    }
+}
+
+/**
  * Read data from the disk or toggle a switch.
  *
  * @param addr The address to read.

@@ -109,6 +109,16 @@ void EmulatorCore::LoadDisk(DiskController::DriveId drive,
 }
 
 /**
+ * Unload a disk from the disk controller.
+ *
+ * @param drive Which drive to unload the disk from.
+ */
+void EmulatorCore::UnloadDisk(DiskController::DriveId drive)
+{
+    _disk_ctrl.UnloadDisk(drive);
+}
+
+/**
  * Run for one video frame (for 60FPS this is 16.667ms).
  *
  * This involves checking SFML events to grab keyboard input, running for one

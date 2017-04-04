@@ -1,5 +1,6 @@
 #include "CpuRegistersWindow.h"
 #include "DisassemblyWindow.h"
+#include "DiskController.h"
 #include "EmulatorCore.h"
 #include "MainWindow.h"
 #include "SettingsDialog.h"
@@ -173,7 +174,7 @@ void MainWindow::save_state(QString filename)
 
         QMessageBox::warning(this,
                              "Can't Save Emulator State",
-                             "Unable to open 'quicksave.a2s' as a writable "
+                             "Unable to open the state file as a writable "
                                 "file");
     }
 }
@@ -213,9 +214,8 @@ void MainWindow::load_state(QString filename)
 
         QMessageBox::warning(this,
                              "Can't Load Emulator State",
-                             "Unable to open 'quicksave.a2s' as a readable "
-                                "file. Ensure this file exists in the current "
-                                "working directory.");
+                             "Unable to open the state file as a readable "
+                                "file.");
     }
 }
 
@@ -253,4 +253,87 @@ void MainWindow::on_actionView_Memory_triggered()
 {
     ViewMemoryWindow *mem = new ViewMemoryWindow(_emu, this);
     mem->show();
+}
+
+/**
+ * Load a disk into the disk controller.
+ *
+ * @param drive Which disk drive to load the disk image into.
+ */
+void MainWindow::load_disk(DiskController::DriveId drive)
+{
+    QString filename = QFileDialog::getOpenFileName(
+                this,
+                "Load Disk",
+                "",
+                "Disk Image (*.dsk)");
+
+    if(filename.size() != 0)
+    {
+        std::ifstream input(filename.toStdString(),
+                            std::ios::ate | std::ios::binary);
+
+        if(input.is_open())
+        {
+            uint32_t filesize = input.tellg();
+
+            if(filesize == DiskDrive::DISK_SIZE)
+            {
+                uint8_t file_data[DiskDrive::DISK_SIZE];
+                input.seekg(0, std::ios::beg);
+                input.read(reinterpret_cast<char*>(file_data), filesize);
+
+                _emu.LoadDisk(drive, file_data);
+
+                if(drive == DiskController::DRIVE_0)
+                    _ui->actionDrive_0->setText("Drive 0: " + filename + "...");
+                else
+                    _ui->actionDrive_1->setText("Drive 1: " + filename + "...");
+
+                _ui->statusbar->showMessage("Disk loaded.", STATUS_TEXT_TIMEOUT);
+            }
+            else
+            {
+                QMessageBox::warning(this,
+                                     "Can't Load Disk Image",
+                                     "There was an error while trying to load "
+                                        "the disk image. Ensure the image you "
+                                        "selected is a valid image (should be "
+                                        "exactly 140KB in size).");
+
+                _emu.UnloadDisk(drive);
+
+                if(drive == DiskController::DRIVE_0)
+                    _ui->actionDrive_0->setText("Drive 0: None...");
+                else
+                    _ui->actionDrive_1->setText("Drive 1: None...");
+            }
+
+            input.close();
+        }
+        else
+        {
+
+            QMessageBox::warning(this,
+                                 "Can't Load Disk Image",
+                                 "Unable to open the disk image as a readable "
+                                    "file.");
+        }
+    }
+}
+
+/**
+ * Loads a disk into Drive 0.
+ */
+void MainWindow::on_actionDrive_0_triggered()
+{
+    load_disk(DiskController::DRIVE_0);
+}
+
+/**
+ * Loads a disk into Drive 1.
+ */
+void MainWindow::on_actionDrive_1_triggered()
+{
+    load_disk(DiskController::DRIVE_1);
 }

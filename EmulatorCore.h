@@ -37,6 +37,7 @@ public:
     void LoadRom(uint8_t data[ROM_SIZE]);
     void LoadDisk(DiskController::DriveId drive,
                   uint8_t data[DiskDrive::DISK_SIZE]);
+    void UnloadDisk(DiskController::DriveId drive);
 
     void RunFrame(int FPS);
     void SingleStep();

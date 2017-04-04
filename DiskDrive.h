@@ -36,6 +36,7 @@ public:
     DiskDrive();
 
     void LoadDisk(uint8_t disk[DISK_SIZE]);
+    void UnloadDisk();
 
     void SeekBit(uint8_t track_num);
     void SeekPrevByte(uint8_t track_num);

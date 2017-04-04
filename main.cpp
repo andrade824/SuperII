@@ -13,9 +13,6 @@
 #include <QApplication>
 
 bool LoadRom(EmulatorCore &emu, const std::string &path);
-bool LoadDisk(EmulatorCore &emu,
-              DiskController::DriveId drive,
-              const std::string &path);
 
 /**
  * How many frames per second to update the video hardware at.
@@ -28,7 +25,6 @@ int main(int argc, char *argv[])
 
     EmulatorCore emulator;
     LoadRom(emulator, "asm/applesoft_rom.bin");
-    LoadDisk(emulator, DiskController::DRIVE_0, "asm/dos33mst.dsk");
 
     MainWindow window(emulator);
     window.show();
@@ -76,34 +72,6 @@ bool LoadRom(EmulatorCore &emu, const std::string &path)
     } else {
         file_loaded = false;
         std::cout << "Failed to open ROM at '" << path << "'" << std::endl;
-    }
-
-    file.close();
-
-    return file_loaded;
-}
-
-bool LoadDisk(EmulatorCore &emu,
-              DiskController::DriveId drive,
-              const std::string &path)
-{
-    bool file_loaded = true;
-    uint32_t filesize = 0;
-
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
-        filesize = file.tellg();
-        assert(filesize == DiskDrive::DISK_SIZE);
-
-        uint8_t file_data[DiskDrive::DISK_SIZE];
-
-        file.seekg(0, std::ios::beg);
-        file.read(reinterpret_cast<char*>(file_data), filesize);
-
-        emu.LoadDisk(drive, file_data);
-    } else {
-        file_loaded = false;
-        std::cout << "Failed to open disk at '" << path << "'" << std::endl;
     }
 
     file.close();

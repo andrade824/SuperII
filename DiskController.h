@@ -24,6 +24,7 @@ public:
     DiskController(Cpu &cpu);
 
     void LoadDisk(DriveId drive, uint8_t data[DiskDrive::DISK_SIZE]);
+    void UnloadDisk(DriveId drive);
 
     uint8_t Read(uint16_t addr, bool no_side_fx = false) override;
     void Write(uint16_t addr, uint8_t data) override;

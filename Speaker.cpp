@@ -34,6 +34,7 @@ Speaker::Speaker(Cpu &cpu) :
     _format(),
     _output(nullptr),
     _audio_io(nullptr),
+    _mute_counter(0),
     _muted(false)
 {
     _format.setSampleRate(SAMPLE_RATE);
@@ -90,19 +91,23 @@ void Speaker::PlayAudio(uint32_t num_cycles)
     {
         int16_t *samples = new int16_t[num_samples];
 
+        if(_toggle_cycles.empty())
+            _mute_counter++;
+
         for(unsigned int i = 0; i < num_samples; ++i)
         {
             if(!_toggle_cycles.empty()  &&
                ((i * CYCLES_PER_SAMPLE + _prev_cycle_count) >=
                _toggle_cycles.front()))
             {
+                _mute_counter = 0;
                 _toggle_cycles.pop();
                 _speaker_state = !_speaker_state;
             }
 
 
             samples[i] = (_speaker_state) ? 16000 : 0;
-            samples[i] = (_muted) ? 0 : samples[i];
+            samples[i] = (_muted || (_mute_counter > 10)) ? 0 : samples[i];
         }
 
         _audio_io->write(reinterpret_cast<char*>(samples), num_samples * 2);

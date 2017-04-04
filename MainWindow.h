@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "DiskController.h"
 #include "EmulatorCore.h"
 
 #include <QKeyEvent>
@@ -43,11 +44,17 @@ private slots:
 
     void on_actionCPU_Registers_triggered();
 
+    void on_actionDrive_0_triggered();
+    
+    void on_actionDrive_1_triggered();
+    
 private:
     void keyPressEvent(QKeyEvent *event);
 
     void save_state(QString filename);
     void load_state(QString filename);
+
+    void load_disk(DiskController::DriveId drive);
 
 private:
     /**
