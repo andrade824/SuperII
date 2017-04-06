@@ -135,6 +135,17 @@ std::string EmulatorCore::GetDiskFilename(DiskController::DriveId drive) const
 }
 
 /**
+ * Returns true if a disk is being accessed.
+ *
+ * @return True if a disk was accessed since the last time this function was
+ *         called.
+ */
+bool EmulatorCore::GetDiskBusy()
+{
+    return _disk_ctrl.GetDiskBusy();
+}
+
+/**
  * Run for one video frame (for 60FPS this is 16.667ms).
  *
  * This involves checking SFML events to grab keyboard input, running for one

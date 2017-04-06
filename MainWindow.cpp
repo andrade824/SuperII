@@ -26,6 +26,9 @@
 MainWindow::MainWindow(EmulatorCore &emu, QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::MainWindow),
+    _status_text(nullptr),
+    _disk_busy(nullptr),
+    _check_disk_busy(nullptr),
     _emu(emu)
 {
     _ui->setupUi(this);
@@ -40,6 +43,21 @@ MainWindow::MainWindow(EmulatorCore &emu, QWidget *parent) :
 
     _status_text = new QLabel();
     _ui->statusbar->addPermanentWidget(_status_text);
+
+    _disk_busy = new QRadioButton("Disk Busy", this);
+    _disk_busy->setChecked(false);
+    _disk_busy->setFocusPolicy(Qt::NoFocus);
+    _ui->statusbar->addPermanentWidget(_disk_busy);
+
+    _check_disk_busy = new QTimer(this);
+    _check_disk_busy->setInterval(DISK_BUSY_TIMEOUT);
+
+    connect(_check_disk_busy,
+            &QTimer::timeout,
+            this,
+            &MainWindow::disk_busy_timeout);
+
+    _check_disk_busy->start();
 }
 
 /**
@@ -344,4 +362,15 @@ void MainWindow::on_actionDrive_0_triggered()
 void MainWindow::on_actionDrive_1_triggered()
 {
     load_disk(DiskController::DRIVE_1);
+}
+
+/**
+ * Check to see if the disk is busy, and update the status bar if so.
+ */
+void MainWindow::disk_busy_timeout()
+{
+    if(_emu.GetDiskBusy())
+        _disk_busy->setChecked(!_disk_busy->isChecked());
+    else
+        _disk_busy->setChecked(false);
 }

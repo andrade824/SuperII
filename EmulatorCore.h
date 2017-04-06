@@ -41,6 +41,7 @@ public:
                   uint8_t data[DiskDrive::DISK_SIZE]);
     void UnloadDisk(DiskController::DriveId drive);
     std::string GetDiskFilename(DiskController::DriveId drive) const;
+    bool GetDiskBusy();
 
     void RunFrame(int FPS);
     void SingleStep();

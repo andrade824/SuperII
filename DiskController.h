@@ -41,6 +41,7 @@ public:
     void LoadState(std::ifstream &input) override;
 
     std::string GetDiskFilename(DriveId drive) const;
+    bool GetDiskBusy();
 
 private:
     void toggle_switch(uint16_t addr);
@@ -131,6 +132,16 @@ private:
      * What the CPU's cycle count was the last time a read/write occurred.
      */
     uint32_t _last_cycle_count;
+
+    /**
+     * Status flag used to alert the GUI that a read/write has been performed
+     * since the last time the flag was read.
+     *
+     * Floppy disks are extremely slow so this is useful for letting the user
+     * know that the program didn't freeze, but is in fact just accessing a
+     * disk.
+     */
+    bool _disk_busy;
 
     /**
      * The disk inserted into drive 0.

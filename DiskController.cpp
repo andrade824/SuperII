@@ -69,6 +69,7 @@ DiskController::DiskController(Cpu &cpu) :
     _cur_track(0),
     _leftover_cycles(CYCLES_PER_BIT),
     _last_cycle_count(0),
+    _disk_busy(false),
     _drive0(),
     _drive1()
 { }
@@ -187,6 +188,7 @@ void DiskController::SaveState(std::ofstream &output)
                  sizeof(_leftover_cycles));
     output.write(reinterpret_cast<char*>(&_last_cycle_count),
                  sizeof(_last_cycle_count));
+    output.write(reinterpret_cast<char*>(&_disk_busy), sizeof(_disk_busy));
 
     _drive0.SaveState(output);
     _drive1.SaveState(output);
@@ -211,6 +213,7 @@ void DiskController::LoadState(std::ifstream &input)
                sizeof(_leftover_cycles));
     input.read(reinterpret_cast<char*>(&_last_cycle_count),
                sizeof(_last_cycle_count));
+    input.read(reinterpret_cast<char*>(&_disk_busy), sizeof(_disk_busy));
 
     _drive0.LoadState(input);
     _drive1.LoadState(input);
@@ -240,6 +243,25 @@ std::string DiskController::GetDiskFilename(DriveId drive) const
     }
 
     return filename;
+}
+
+/**
+ * Returns true if a disk is being accessed.
+ *
+ * @return True if a disk was accessed since the last time this function was
+ *         called.
+ */
+bool DiskController::GetDiskBusy()
+{
+    if(_disk_busy)
+    {
+        _disk_busy = false;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 /**
@@ -343,6 +365,8 @@ void DiskController::perform_read_write(uint16_t addr, uint8_t data_bus)
     DiskDrive &drive = (_drive_0_enabled) ? _drive0 : _drive1;
     int cycle_delta = _cpu.GetTotalCycles() - _last_cycle_count;
     bool switches_toggled = false;
+
+    _disk_busy = true;
 
     if(_motor_on)
     {
