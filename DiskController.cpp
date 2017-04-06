@@ -95,19 +95,22 @@ void DiskController::Reset()
 /**
  * Loads a disk image into the specified drive.
  *
+ * @param filename The full path to the disk image.
  * @param drive The drive to load a disk into.
  * @param data The disk image data.
  */
-void DiskController::LoadDisk(DriveId drive, uint8_t data[DiskDrive::DISK_SIZE])
+void DiskController::LoadDisk(std::string filename,
+                              DriveId drive,
+                              uint8_t data[DiskDrive::DISK_SIZE])
 {
     switch(drive)
     {
     case DRIVE_0:
-        _drive0.LoadDisk(data);
+        _drive0.LoadDisk(filename, data);
         break;
 
     case DRIVE_1:
-        _drive1.LoadDisk(data);
+        _drive1.LoadDisk(filename, data);
         break;
     }
 }
@@ -117,7 +120,7 @@ void DiskController::LoadDisk(DriveId drive, uint8_t data[DiskDrive::DISK_SIZE])
  *
  * @param drive Which drive to unload the disk from.
  */
-void DiskController::UnloadDisk(DiskController::DriveId drive)
+void DiskController::UnloadDisk(DriveId drive)
 {
     switch(drive)
     {
@@ -163,6 +166,80 @@ uint8_t DiskController::Read(uint16_t addr, bool no_side_fx)
 void DiskController::Write(uint16_t addr, uint8_t data)
 {
     perform_read_write(addr, data);
+}
+
+/**
+ * Save the Disk controller state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void DiskController::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(&_data_reg), sizeof(_data_reg));
+    output.write(reinterpret_cast<char*>(&_shift_load), sizeof(_shift_load));
+    output.write(reinterpret_cast<char*>(&_read_write), sizeof(_read_write));
+    output.write(reinterpret_cast<char*>(&_motor_on), sizeof(_motor_on));
+    output.write(reinterpret_cast<char*>(&_drive_0_enabled),
+                 sizeof(_drive_0_enabled));
+    output.write(reinterpret_cast<char*>(&_cur_phase), sizeof(_cur_phase));
+    output.write(reinterpret_cast<char*>(&_cur_track), sizeof(_cur_track));
+    output.write(reinterpret_cast<char*>(&_leftover_cycles),
+                 sizeof(_leftover_cycles));
+    output.write(reinterpret_cast<char*>(&_last_cycle_count),
+                 sizeof(_last_cycle_count));
+
+    _drive0.SaveState(output);
+    _drive1.SaveState(output);
+}
+
+/**
+ * Load the Disk controller state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void DiskController::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(&_data_reg), sizeof(_data_reg));
+    input.read(reinterpret_cast<char*>(&_shift_load), sizeof(_shift_load));
+    input.read(reinterpret_cast<char*>(&_read_write), sizeof(_read_write));
+    input.read(reinterpret_cast<char*>(&_motor_on), sizeof(_motor_on));
+    input.read(reinterpret_cast<char*>(&_drive_0_enabled),
+               sizeof(_drive_0_enabled));
+    input.read(reinterpret_cast<char*>(&_cur_phase), sizeof(_cur_phase));
+    input.read(reinterpret_cast<char*>(&_cur_track), sizeof(_cur_track));
+    input.read(reinterpret_cast<char*>(&_leftover_cycles),
+               sizeof(_leftover_cycles));
+    input.read(reinterpret_cast<char*>(&_last_cycle_count),
+               sizeof(_last_cycle_count));
+
+    _drive0.LoadState(input);
+    _drive1.LoadState(input);
+}
+
+/**
+ * Return back the full path to a disk image loaded in one of the disk drives.
+ *
+ * @param drive The drive containing the disk image.
+ *
+ * @return The full path to the disk image if the drive is loaded with a disk,
+ *         or "None" otherwise.
+ */
+std::string DiskController::GetDiskFilename(DriveId drive) const
+{
+    std::string filename = "";
+
+    switch(drive)
+    {
+    case DRIVE_0:
+        filename = _drive0.GetFilename();
+        break;
+
+    case DRIVE_1:
+        filename = _drive1.GetFilename();
+        break;
+    }
+
+    return filename;
 }
 
 /**

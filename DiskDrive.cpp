@@ -16,16 +16,18 @@
  */
 #include "DiskDrive.h"
 
+#include <cstring>
 #include <iostream>
 
 /**
  * Constructor.
  */
 DiskDrive::DiskDrive() :
-    _tracks(),
+    _cur_bit(0),
     _disk_loaded(false),
     _write_protected(false),
-    _cur_bit(0)
+    _filename(""),
+    _tracks()
 { }
 
 /**
@@ -43,7 +45,7 @@ void DiskDrive::Reset()
  *
  * @param disk The raw non-encoded disk image (probably downloaded online).
  */
-void DiskDrive::LoadDisk(uint8_t disk[DISK_SIZE])
+void DiskDrive::LoadDisk(std::string filename, uint8_t disk[DISK_SIZE])
 {
     if(_disk_loaded)
         UnloadDisk();
@@ -52,6 +54,7 @@ void DiskDrive::LoadDisk(uint8_t disk[DISK_SIZE])
         encode_track(i, disk + (i * NUM_SECTORS * SECTOR_SIZE));
 
     _disk_loaded = true;
+    _filename = filename;
 }
 
 /**
@@ -64,6 +67,7 @@ void DiskDrive::UnloadDisk()
 
     _cur_bit = 0;
     _disk_loaded = false;
+    _filename = "";
 }
 
 /**
@@ -138,6 +142,17 @@ uint8_t DiskDrive::GetBit(uint8_t track_num)
 bool DiskDrive::GetWriteProtect() const
 {
     return _write_protected;
+}
+
+/**
+ * Returns back the filename.
+ *
+ * @return Filename of the currently loaded disk or "None" if no disk is
+ *         loaded.
+ */
+std::string DiskDrive::GetFilename() const
+{
+    return (_disk_loaded) ? _filename : "None";
 }
 
 /**
@@ -312,4 +327,68 @@ void DiskDrive::encode_44(uint8_t track_num, uint8_t data)
 {
     _tracks[track_num].push_back((data >> 1) | 0xAA);
     _tracks[track_num].push_back(data | 0xAA);
+}
+
+/**
+ * Save the Disk controller state out to a file.
+ *
+ * @param output The file to write to.
+ */
+void DiskDrive::SaveState(std::ofstream &output)
+{
+    output.write(reinterpret_cast<char*>(&_cur_bit), sizeof(_cur_bit));
+    output.write(reinterpret_cast<char*>(&_disk_loaded), sizeof(_disk_loaded));
+    output.write(reinterpret_cast<char*>(&_write_protected),
+                 sizeof(_write_protected));
+
+    if(_disk_loaded)
+    {
+        size_t size = _filename.size();
+        output.write(reinterpret_cast<char*>(&size), sizeof(size));
+        output.write(&_filename[0], size);
+
+        int track_size = _tracks[0].size();
+        output.write(reinterpret_cast<char*>(&track_size), sizeof(track_size));
+
+        for(int i = 0; i < NUM_TRACKS; ++i)
+        {
+            output.write(reinterpret_cast<char*>(&_tracks[i][0]),
+                         track_size * sizeof(uint8_t));
+        }
+    }
+}
+
+/**
+ * Load the Disk controller state out of a file.
+ *
+ * @param input The file to read from.
+ */
+void DiskDrive::LoadState(std::ifstream &input)
+{
+    input.read(reinterpret_cast<char*>(&_cur_bit), sizeof(_cur_bit));
+    input.read(reinterpret_cast<char*>(&_disk_loaded), sizeof(_disk_loaded));
+    input.read(reinterpret_cast<char*>(&_write_protected),
+               sizeof(_write_protected));
+
+    if(_disk_loaded)
+    {
+        size_t size = _filename.size();
+        input.read(reinterpret_cast<char*>(&size), sizeof(size));
+        _filename.resize(size);
+        input.read(&_filename[0], size);
+
+        int track_size = 0;
+        input.read(reinterpret_cast<char*>(&track_size), sizeof(track_size));
+
+        for(int i = 0; i < NUM_TRACKS; ++i)
+        {
+            _tracks[i].resize(track_size);
+            input.read(reinterpret_cast<char*>(&_tracks[i][0]),
+                       track_size * sizeof(uint8_t));
+        }
+    }
+    else
+    {
+        UnloadDisk();
+    }
 }

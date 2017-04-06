@@ -1,10 +1,14 @@
 #ifndef DISKIMAGE_H
 #define DISKIMAGE_H
 
+#include "IState.h"
+
 #include <cstdint>
+#include <fstream>
+#include <string>
 #include <vector>
 
-class DiskDrive
+class DiskDrive : public IState
 {
 public:
     /**
@@ -37,7 +41,7 @@ public:
 
     void Reset();
 
-    void LoadDisk(uint8_t disk[DISK_SIZE]);
+    void LoadDisk(std::string filename, uint8_t disk[DISK_SIZE]);
     void UnloadDisk();
 
     void SeekBit(uint8_t track_num);
@@ -47,6 +51,10 @@ public:
     uint8_t GetBit(uint8_t track_num);
 
     bool GetWriteProtect() const;
+    std::string GetFilename() const;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
 
 private:
     void encode_track(uint8_t track_num, uint8_t *data);
@@ -56,9 +64,10 @@ private:
 
 private:
     /**
-     * Encoded data for each track.
+     * The bit to read/write. This is the current position of the disk in its
+     * rotation.
      */
-    std::vector<uint8_t> _tracks[NUM_TRACKS];
+    uint32_t _cur_bit;
 
     /**
      * True if a disk has been loaded, otherwise false.
@@ -71,10 +80,14 @@ private:
     bool _write_protected;
 
     /**
-     * The bit to read/write. This is the current position of the disk in its
-     * rotation.
+     * Full path to the disk image if a disk is loaded.
      */
-    uint32_t _cur_bit;
+    std::string _filename;
+
+    /**
+     * Encoded data for each track.
+     */
+    std::vector<uint8_t> _tracks[NUM_TRACKS];
 };
 
 #endif // DISKIMAGE_H

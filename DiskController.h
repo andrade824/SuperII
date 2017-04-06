@@ -4,8 +4,12 @@
 #include "Cpu.h"
 #include "DiskDrive.h"
 #include "IMemoryMapped.h"
+#include "IState.h"
 
-class DiskController : public IMemoryMapped
+#include <fstream>
+#include <string>
+
+class DiskController : public IMemoryMapped, public IState
 {
 public:
     /**
@@ -25,11 +29,18 @@ public:
 
     void Reset();
 
-    void LoadDisk(DriveId drive, uint8_t data[DiskDrive::DISK_SIZE]);
+    void LoadDisk(std::string filename,
+                  DriveId drive,
+                  uint8_t data[DiskDrive::DISK_SIZE]);
     void UnloadDisk(DriveId drive);
 
     uint8_t Read(uint16_t addr, bool no_side_fx = false) override;
     void Write(uint16_t addr, uint8_t data) override;
+
+    void SaveState(std::ofstream &output) override;
+    void LoadState(std::ifstream &input) override;
+
+    std::string GetDiskFilename(DriveId drive) const;
 
 private:
     void toggle_switch(uint16_t addr);

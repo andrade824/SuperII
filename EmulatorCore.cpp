@@ -100,13 +100,15 @@ void EmulatorCore::LoadRom(uint8_t data[ROM_SIZE])
 /**
  * Load a disk image into memory.
  *
+ * @param filename The full path of the disk image.
  * @param drive The disk drive to "insert" the image into.
  * @param data The disk image data.
  */
-void EmulatorCore::LoadDisk(DiskController::DriveId drive,
+void EmulatorCore::LoadDisk(std::string filename,
+                            DiskController::DriveId drive,
                             uint8_t data[DiskDrive::DISK_SIZE])
 {
-    _disk_ctrl.LoadDisk(drive, data);
+    _disk_ctrl.LoadDisk(filename, drive, data);
 }
 
 /**
@@ -117,6 +119,19 @@ void EmulatorCore::LoadDisk(DiskController::DriveId drive,
 void EmulatorCore::UnloadDisk(DiskController::DriveId drive)
 {
     _disk_ctrl.UnloadDisk(drive);
+}
+
+/**
+ * Return back the full path to a disk image loaded in one of the disk drives.
+ *
+ * @param drive The drive containing the disk image.
+ *
+ * @return The full path to the disk image if the drive is loaded with a disk,
+ *         or "None" otherwise.
+ */
+std::string EmulatorCore::GetDiskFilename(DiskController::DriveId drive) const
+{
+    return _disk_ctrl.GetDiskFilename(drive);
 }
 
 /**
@@ -303,6 +318,7 @@ bool EmulatorCore::SaveState(std::ofstream &output)
     _video->SaveState(output);
     _keyboard.SaveState(output);
     _speaker.SaveState(output);
+    _disk_ctrl.SaveState(output);
 
     output.write(reinterpret_cast<char*>(&_leftover_cycles),
                  sizeof(_leftover_cycles));
@@ -346,6 +362,10 @@ bool EmulatorCore::LoadState(std::ifstream &input)
         return false;
 
     _speaker.LoadState(input);
+    if(!input || input.eof())
+        return false;
+
+    _disk_ctrl.LoadState(input);
     if(!input || input.eof())
         return false;
 

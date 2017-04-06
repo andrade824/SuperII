@@ -193,6 +193,14 @@ void MainWindow::load_state(QString filename)
     {
         if(_emu.LoadState(input))
         {
+            QString drive0_filename = QString::fromStdString(
+                        _emu.GetDiskFilename(DiskController::DRIVE_0));
+            _ui->actionDrive_0->setText("Drive 0: " + drive0_filename + "...");
+
+            QString drive1_filename = QString::fromStdString(
+                        _emu.GetDiskFilename(DiskController::DRIVE_1));
+            _ui->actionDrive_1->setText("Drive 1: " + drive1_filename + "...");
+
             _ui->statusbar->showMessage("State loaded.", STATUS_TEXT_TIMEOUT);
         }
         else
@@ -283,7 +291,7 @@ void MainWindow::load_disk(DiskController::DriveId drive)
                 input.seekg(0, std::ios::beg);
                 input.read(reinterpret_cast<char*>(file_data), filesize);
 
-                _emu.LoadDisk(drive, file_data);
+                _emu.LoadDisk(filename.toStdString(), drive, file_data);
 
                 if(drive == DiskController::DRIVE_0)
                     _ui->actionDrive_0->setText("Drive 0: " + filename + "...");
