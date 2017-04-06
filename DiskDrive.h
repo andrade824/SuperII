@@ -35,6 +35,8 @@ public:
 public:
     DiskDrive();
 
+    void Reset();
+
     void LoadDisk(uint8_t disk[DISK_SIZE]);
     void UnloadDisk();
 

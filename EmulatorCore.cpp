@@ -69,6 +69,7 @@ void EmulatorCore::PowerCycle()
     _video->Reset();
     _keyboard.Reset();
     _speaker.Reset();
+    _disk_ctrl.Reset();
 
     _leftover_cycles = 0;
 }

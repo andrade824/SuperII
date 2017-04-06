@@ -23,6 +23,8 @@ public:
 public:
     DiskController(Cpu &cpu);
 
+    void Reset();
+
     void LoadDisk(DriveId drive, uint8_t data[DiskDrive::DISK_SIZE]);
     void UnloadDisk(DriveId drive);
 

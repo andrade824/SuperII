@@ -29,6 +29,15 @@ DiskDrive::DiskDrive() :
 { }
 
 /**
+ * Reset the disk drive to its default state. This doesn't remove any disk data,
+ * it just resets the disk's current position.
+ */
+void DiskDrive::Reset()
+{
+    _cur_bit = 0;
+}
+
+/**
  * Encodes a disk image into the correct format for use by the Apple II
  * firmware.
  *

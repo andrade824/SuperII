@@ -74,6 +74,25 @@ DiskController::DiskController(Cpu &cpu) :
 { }
 
 /**
+ * Reset the disk controller to it's default state without removing any disk
+ * data.
+ */
+void DiskController::Reset()
+{
+    _data_reg = 0;
+    _shift_load = false;
+    _read_write = false;
+    _motor_on = false;
+    _drive_0_enabled = true;
+    _cur_phase = PHASE_0;
+    _cur_track = 0;
+    _leftover_cycles = CYCLES_PER_BIT;
+    _last_cycle_count = 0;
+    _drive0.Reset();
+    _drive1.Reset();
+}
+
+/**
  * Loads a disk image into the specified drive.
  *
  * @param drive The drive to load a disk into.
