@@ -16,7 +16,7 @@ EmulatorCore::EmulatorCore() :
     _bus(),
     _cpu(_bus, instrs_6502),
     _mem(0, 0xBFFF, false),
-    _rom(0xD000, 0xFFFF, true),
+    _lang_card(),
     _video(new Video(_mem)),
     _keyboard(),
     _speaker(_cpu),
@@ -25,7 +25,10 @@ EmulatorCore::EmulatorCore() :
     _paused(false)
 {
     _bus.Register(&_mem);
-    _bus.Register(&_rom);
+    _bus.Register(&_lang_card);
+    _bus.Register(&_lang_card,
+                  LanguageCard::LANG_CARD_START,
+                  LanguageCard::LANG_CARD_END);
     _bus.Register(_video);
     _bus.Register(&_keyboard);
     _bus.Register(&_speaker);
@@ -33,6 +36,12 @@ EmulatorCore::EmulatorCore() :
     _bus.Register(&_disk_ctrl,
                   DiskController::DISK_ROM_START,
                   DiskController::DISK_ROM_END);
+
+    /**
+     * Reset the CPU so it grabs the correct reset vector now that the system
+     * bus is setup.
+     */
+    _cpu.Reset();
 }
 
 /**
@@ -66,6 +75,7 @@ void EmulatorCore::PowerCycle()
 {
     _cpu.Reset();
     _mem.Reset();
+    _lang_card.Reset();
     _video->Reset();
     _keyboard.Reset();
     _speaker.Reset();
@@ -82,19 +92,6 @@ void EmulatorCore::PowerCycle()
 CpuContext EmulatorCore::GetCpuContext() const
 {
     return _cpu.GetContext();
-}
-
-/**
- * Load data into ROM.
- *
- * @note The size of the Apple II+ ROM is 12KB.
- *
- * @param data The data to load into ROM.
- */
-void EmulatorCore::LoadRom(uint8_t data[ROM_SIZE])
-{
-    _rom.LoadMemory(data, ROM_SIZE);
-    _cpu.Reset();
 }
 
 /**
@@ -163,7 +160,7 @@ void EmulatorCore::RunFrame(int FPS)
          * The standard Apple II CPU frequency is 1.023MHz.
          */
         constexpr uint32_t CPU_FREQ = 1023000;
-        const uint32_t CYCLES_PER_FRAME = CPU_FREQ / FPS;
+        const uint32_t CYCLES_PER_FRAME = (CPU_FREQ / FPS) * 4;
 
         _leftover_cycles = _cpu.Execute(CYCLES_PER_FRAME - _leftover_cycles);
 
@@ -325,7 +322,7 @@ bool EmulatorCore::SaveState(std::ofstream &output)
 
     _cpu.SaveState(output);
     _mem.SaveState(output);
-    _rom.SaveState(output);
+    _lang_card.SaveState(output);
     _video->SaveState(output);
     _keyboard.SaveState(output);
     _speaker.SaveState(output);
@@ -360,7 +357,7 @@ bool EmulatorCore::LoadState(std::ifstream &input)
     if(!input || input.eof())
         return false;
 
-    _rom.LoadState(input);
+    _lang_card.LoadState(input);
     if(!input || input.eof())
         return false;
 

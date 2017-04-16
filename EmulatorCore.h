@@ -5,6 +5,7 @@
 #include "DiskController.h"
 #include "IState.h"
 #include "Keyboard.h"
+#include "LanguageCard.h"
 #include "Memory.h"
 #include "Speaker.h"
 #include "SystemBus.h"
@@ -19,12 +20,6 @@
 class EmulatorCore
 {
 public:
-    /**
-     * Size of the ROM in bytes.
-     */
-    static constexpr uint32_t ROM_SIZE = 12288;
-
-public:
     EmulatorCore();
 
     void SetPaused(bool pause);
@@ -35,7 +30,6 @@ public:
 
     CpuContext GetCpuContext() const;
 
-    void LoadRom(uint8_t data[ROM_SIZE]);
     void LoadDisk(std::string filename,
                   DiskController::DriveId drive,
                   uint8_t data[DiskDrive::DISK_SIZE]);
@@ -93,9 +87,10 @@ private:
     Memory _mem;
 
     /**
-     * 12K of ROM.
+     * Language Card add-on that contains the 12KB Applesoft ROM and 16KB of
+     * extra RAM.
      */
-    Memory _rom;
+    LanguageCard _lang_card;
 
     /**
      * Video module. This is both a QWidget (so QT can render it) and an SFML

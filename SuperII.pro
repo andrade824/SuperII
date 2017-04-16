@@ -32,7 +32,10 @@ SOURCES += main.cpp \
     CpuRegistersWindow.cpp \
     ViewMemoryWindow.cpp \
     DiskController.cpp \
-    DiskDrive.cpp
+    DiskDrive.cpp \
+    applesoft_rom.cpp \
+    LanguageCard.cpp
+
 
 OTHER_FILES += \
     TODO.txt \
@@ -56,7 +59,9 @@ HEADERS += \
     CpuRegistersWindow.h \
     ViewMemoryWindow.h \
     DiskController.h \
-    DiskDrive.h
+    DiskDrive.h \
+    applesoft_rom.h \
+    LanguageCard.h
 
 FORMS += \
     MainWindow.ui \

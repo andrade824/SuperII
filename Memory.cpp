@@ -51,9 +51,9 @@ void Memory::LoadMemory(const uint8_t *data, uint16_t data_size)
 /**
  * Read a single 8-bit quantity out of memory.
  *
- * @param addr Address to read from
+ * @param addr Address to read from.
  *
- * @return The data at that address
+ * @return The data at that address.
  */
 uint8_t Memory::Read(uint16_t addr, bool)
 {

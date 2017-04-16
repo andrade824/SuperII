@@ -12,8 +12,6 @@
 
 #include <QApplication>
 
-bool LoadRom(EmulatorCore &emu, const std::string &path);
-
 /**
  * How many frames per second to update the video hardware at.
  */
@@ -24,7 +22,6 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     EmulatorCore emulator;
-    LoadRom(emulator, "asm/applesoft_rom.bin");
 
     MainWindow window(emulator);
     window.show();
@@ -51,30 +48,4 @@ int main(int argc, char *argv[])
     }
 
     return 0;
-}
-
-bool LoadRom(EmulatorCore &emu, const std::string &path)
-{
-    bool file_loaded = true;
-    uint32_t filesize = 0;
-
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
-        filesize = file.tellg();
-        assert(filesize == EmulatorCore::ROM_SIZE);
-
-        uint8_t file_data[EmulatorCore::ROM_SIZE];
-
-        file.seekg(0, std::ios::beg);
-        file.read(reinterpret_cast<char*>(file_data), filesize);
-
-        emu.LoadRom(file_data);
-    } else {
-        file_loaded = false;
-        std::cout << "Failed to open ROM at '" << path << "'" << std::endl;
-    }
-
-    file.close();
-
-    return file_loaded;
 }
