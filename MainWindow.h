@@ -52,6 +52,10 @@ private slots:
 
     void disk_busy_timeout();
     
+    void on_actionSpeed_Up_triggered();
+
+    void on_actionSpeed_Down_triggered();
+
 private:
     void keyPressEvent(QKeyEvent *event);
 
@@ -75,6 +79,11 @@ private:
      * Contains all of the UI elements generated in the Qt Forms Designer.
      */
     Ui::MainWindow *_ui;
+
+    /**
+     * Label used to show what the current CPU turbo is.
+     */
+    QLabel *_turbo_text;
 
     /**
      * The text to display in the status bar.

@@ -57,6 +57,9 @@ public:
 
     void GetMemory(QByteArray &mem, uint16_t start, uint16_t end);
 
+    void SetTurbo(uint8_t turbo);
+    uint8_t GetTurbo() const;
+
     bool SaveState(std::ofstream &output);
     bool LoadState(std::ifstream &input);
 
@@ -123,6 +126,12 @@ private:
      * True if the emulator is paused, false otherwise.
      */
     bool _paused;
+
+    /**
+     * Multiplier used to increase the number of CPU cycles executed in each
+     * frame.
+     */
+    uint8_t _turbo;
 };
 
 #endif // EMULATORCORE_H

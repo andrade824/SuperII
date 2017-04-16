@@ -26,6 +26,7 @@
 MainWindow::MainWindow(EmulatorCore &emu, QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::MainWindow),
+    _turbo_text(nullptr),
     _status_text(nullptr),
     _disk_busy(nullptr),
     _check_disk_busy(nullptr),
@@ -40,6 +41,9 @@ MainWindow::MainWindow(EmulatorCore &emu, QWidget *parent) :
     window->setLayout(main_layout);
 
     setCentralWidget(window);
+
+    _turbo_text = new QLabel("Turbo: 1x");
+    _ui->statusbar->addPermanentWidget(_turbo_text);
 
     _status_text = new QLabel();
     _ui->statusbar->addPermanentWidget(_status_text);
@@ -83,6 +87,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
      */
     if(!event->isAutoRepeat())
         _emu.UpdateKeyboardStrobe(event);
+}
+
+/**
+ * Check to see if the disk is busy, and update the status bar if so.
+ */
+void MainWindow::disk_busy_timeout()
+{
+    if(_emu.GetDiskBusy())
+        _disk_busy->setChecked(!_disk_busy->isChecked());
+    else
+        _disk_busy->setChecked(false);
 }
 
 /**
@@ -365,12 +380,27 @@ void MainWindow::on_actionDrive_1_triggered()
 }
 
 /**
- * Check to see if the disk is busy, and update the status bar if so.
+ * Increase the CPU turbo.
  */
-void MainWindow::disk_busy_timeout()
+void MainWindow::on_actionSpeed_Up_triggered()
 {
-    if(_emu.GetDiskBusy())
-        _disk_busy->setChecked(!_disk_busy->isChecked());
-    else
-        _disk_busy->setChecked(false);
+    uint8_t _turbo = _emu.GetTurbo() + 1;
+
+    _emu.SetTurbo(_turbo);
+
+    _turbo_text->setText(QString::asprintf("Turbo: %dx", _turbo));
+}
+
+/**
+ * Decrease the CPU turbo.
+ */
+void MainWindow::on_actionSpeed_Down_triggered()
+{
+    uint8_t _turbo = _emu.GetTurbo() - 1;
+
+    if(_turbo > 0)
+    {
+        _emu.SetTurbo(_turbo);
+        _turbo_text->setText(QString::asprintf("Turbo: %dx", _turbo));
+    }
 }

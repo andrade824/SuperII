@@ -51,11 +51,11 @@ void LanguageCard::Reset()
  *
  * @return The data at that address.
  */
-uint8_t LanguageCard::Read(uint16_t addr, bool)
+uint8_t LanguageCard::Read(uint16_t addr, bool no_side_fx)
 {
     uint8_t value = 0;
 
-    if(addr >= LANG_CARD_START && addr <= LANG_CARD_END)
+    if(addr >= LANG_CARD_START && addr <= LANG_CARD_END && !no_side_fx)
     {
         value = handle_control(addr);
     }

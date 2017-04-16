@@ -22,7 +22,8 @@ EmulatorCore::EmulatorCore() :
     _speaker(_cpu),
     _disk_ctrl(_cpu),
     _leftover_cycles(0),
-    _paused(false)
+    _paused(false),
+    _turbo(1)
 {
     _bus.Register(&_mem);
     _bus.Register(&_lang_card);
@@ -160,7 +161,7 @@ void EmulatorCore::RunFrame(int FPS)
          * The standard Apple II CPU frequency is 1.023MHz.
          */
         constexpr uint32_t CPU_FREQ = 1023000;
-        const uint32_t CYCLES_PER_FRAME = (CPU_FREQ / FPS) * 4;
+        const uint32_t CYCLES_PER_FRAME = (CPU_FREQ / FPS) * _turbo;
 
         _leftover_cycles = _cpu.Execute(CYCLES_PER_FRAME - _leftover_cycles);
 
@@ -306,6 +307,26 @@ void EmulatorCore::GetMemory(QByteArray &mem, uint16_t start, uint16_t end)
 
     for(int i = start; i <= end; i++)
         mem.append(_bus.Read(i, true));
+}
+
+/**
+ * Set the CPU's turbo multiplier.
+ *
+ * @param turbo The new turbo value.
+ */
+void EmulatorCore::SetTurbo(uint8_t turbo)
+{
+    _turbo = turbo;
+}
+
+/**
+ * Get the CPU turbo multiplier.
+ *
+ * @return The current turbo value.
+ */
+uint8_t EmulatorCore::GetTurbo() const
+{
+    return _turbo;
 }
 
 /**
